@@ -26,10 +26,8 @@ Supporte **1000+ sites** (YouTube, Twitter/X, Instagram, TikTok, Twitch, Vimeo, 
 ### Méthode 1 — Script automatique (recommandé)
 
 ```bash
-git clone https://github.com/VOTRE_USER/nexus-converter.git
-cd nexus-converter
-./install.sh
-./start.sh
+curl -fsSL https://raw.githubusercontent.com/HiTechTN/nexus-converter/main/install.sh | bash
+cd ~/nexus-converter && ./start.sh
 ```
 
 L'application sera disponible sur **http://localhost:5173**
@@ -37,7 +35,7 @@ L'application sera disponible sur **http://localhost:5173**
 ### Méthode 2 — Docker Compose (le plus simple)
 
 ```bash
-git clone https://github.com/VOTRE_USER/nexus-converter.git
+git clone https://github.com/HiTechTN/nexus-converter.git
 cd nexus-converter
 
 # Construire et lancer
@@ -59,7 +57,7 @@ L'application sera disponible sur **http://localhost**
 #    - yt-dlp       →  pip install yt-dlp
 
 # 2. Cloner et installer
-git clone https://github.com/VOTRE_USER/nexus-converter.git
+git clone https://github.com/HiTechTN/nexus-converter.git
 cd nexus-converter
 pnpm install
 
@@ -70,6 +68,16 @@ pnpm --filter @workspace/api-spec run codegen
 PORT=3000 pnpm --filter @workspace/api-server run dev      # Terminal 1
 PORT=5173 pnpm --filter @workspace/media-converter run dev # Terminal 2
 ```
+
+### Méthode 4 — Builds desktop pré-packagés
+
+Téléchargez la dernière release depuis [GitHub Releases](https://github.com/HiTechTN/nexus-converter/releases) :
+
+| Plateforme | Format |
+|---|---|
+| 🐧 Linux | `.AppImage`, `.deb`, `.tar.gz` |
+| 🪟 Windows | `Setup.exe` (NSIS), `portable.exe` |
+| 🤖 Android | `.apk`, `.aab` |
 
 ---
 

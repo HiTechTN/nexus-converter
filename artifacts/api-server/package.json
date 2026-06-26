@@ -9,7 +9,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "clean": "rm -rf dist",
-    "lint": "echo 'no lint'"
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",

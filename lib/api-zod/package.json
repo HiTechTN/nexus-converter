@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
-    "lint": "echo 'no lint'"
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "zod": "^3.22.0"

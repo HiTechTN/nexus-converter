@@ -52,8 +52,8 @@ jobs:
           cd artifacts/nexus-desktop
           npx tsc --noEmit
 
-      - name: Run tests
-        run: pnpm -r run lint 2>/dev/null || true
+      - name: Type-check all packages
+        run: pnpm -r run lint
 
   build-desktop-linux:
     name: "🐧 Desktop Linux Build"

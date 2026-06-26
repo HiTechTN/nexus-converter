@@ -10,7 +10,7 @@
     "clean": "rm -rf dist",
     "generate-icons": "bash scripts/generate-icons.sh",
     "postinstall": "bash scripts/generate-icons.sh",
-    "lint": "echo 'no lint'"
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.28.0",

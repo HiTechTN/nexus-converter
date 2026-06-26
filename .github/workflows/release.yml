@@ -294,6 +294,12 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   # 5. BUILD iOS (.ipa) — macOS runner uniquement
   # ──────────────────────────────────────────────────────────────────────────
+  # NOTE: iOS build requires Apple Developer secrets in GitHub:
+  #   - APPLE_DEVELOPER_TEAM (Team ID, e.g. ABC123DEFG)
+  #   - APPLE_CERTIFICATES (base64-encoded .p12 + provisioning profiles)
+  #   See: https://github.com/Apple-Actions/ios-build#usage
+  # Without these secrets, the archive step succeeds but IPA export is skipped.
+  # ──────────────────────────────────────────────────────────────────────────
   mobile-ios:
     name: "📱 iOS IPA"
     needs: [build-web]
