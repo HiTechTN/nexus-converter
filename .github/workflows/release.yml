@@ -25,7 +25,7 @@ on:
 # ─── Env ──────────────────────────────────────────────────────────────────────
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "22"
   PNPM_VERSION: "10"
   REGISTRY: ghcr.io
 
@@ -252,9 +252,10 @@ jobs:
           name: web-build
           path: artifacts/media-converter/dist/
 
-      - name: Sync Capacitor Android
+      - name: Add & Sync Capacitor Android
         run: |
           cd artifacts/nexus-mobile
+          [ -d android ] || npx cap add android
           npx cap sync android
 
       - name: Build Android APK (debug)
@@ -310,9 +311,10 @@ jobs:
           name: web-build
           path: artifacts/media-converter/dist/
 
-      - name: Sync Capacitor iOS
+      - name: Add & Sync Capacitor iOS
         run: |
           cd artifacts/nexus-mobile
+          [ -d ios/App ] || npx cap add ios
           npx cap sync ios
 
       - name: Build iOS (debug)

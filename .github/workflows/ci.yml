@@ -13,7 +13,7 @@ on:
     branches: [main]
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "22"
   PNPM_VERSION: "10"
 
 jobs:
@@ -138,9 +138,10 @@ jobs:
       - name: Build web frontend
         run: pnpm --filter @workspace/media-converter run build
 
-      - name: Sync Capacitor Android
+      - name: Add & Sync Capacitor Android
         run: |
           cd artifacts/nexus-mobile
+          [ -d android ] || npx cap add android
           npx cap sync android
 
       - name: Build Android APK (debug)
