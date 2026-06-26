@@ -398,7 +398,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   create-release:
     name: "🏷️ Create GitHub Release"
-    if: always()
+    if: ${{ always() && needs.build-web.result == 'success' }}
     needs: [build-web, desktop-linux, desktop-windows, mobile-android, mobile-ios]
     runs-on: ubuntu-latest
     permissions:
