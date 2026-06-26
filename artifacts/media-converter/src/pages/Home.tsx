@@ -480,11 +480,13 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
         <ApiErrorDisplay
           error={convertMutation.isError ? convertMutation.error.message : null}
           onDismiss={() => convertMutation.reset()}
+          onRetry={() => { convertMutation.reset(); handleConvert(); }}
           className="mt-4"
         />
         <ApiErrorDisplay
           error={uploadMutation.isError ? uploadMutation.error.message : null}
           onDismiss={() => uploadMutation.reset()}
+          onRetry={() => { uploadMutation.reset(); handleUpload(); }}
           className="mt-4"
         />
       </div>

@@ -10,6 +10,7 @@ export interface ApiError {
 interface ApiErrorDisplayProps {
   error: ApiError | string | null;
   onDismiss?: () => void;
+  onRetry?: () => void;
   className?: string;
 }
 
@@ -69,6 +70,7 @@ function errorHint(code?: string): string {
 export default function ApiErrorDisplay({
   error,
   onDismiss,
+  onRetry,
   className = "",
 }: ApiErrorDisplayProps) {
   const structured = typeof error === "string" ? parseApiError(error) : error;
@@ -121,6 +123,23 @@ export default function ApiErrorDisplay({
             <p className="text-sm font-body text-[#8888aa]">
               {errorHint(structured.code)}
             </p>
+
+            {/* Retry button */}
+            {onRetry && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={onRetry}
+                className="w-full sm:w-auto px-5 py-2.5 bg-[#0f3460] text-white font-display text-xs tracking-wider rounded-lg
+                           hover:bg-[#1a4a80] transition-all flex items-center justify-center gap-2"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                </svg>
+                RÉESSAYER
+              </motion.button>
+            )}
 
             {/* Raw message (collapsed details) */}
             {structured.message && structured.message !== structured.error && (
