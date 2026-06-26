@@ -1,0 +1,12 @@
+{
+  "name": "@workspace/api-spec",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "codegen": "orval --input ./openapi.yaml --output ../api-client-react/src --client react-query && orval --input ./openapi.yaml --output ../api-zod/src --client zod",
+    "lint": "echo 'no lint'"
+  },
+  "devDependencies": {
+    "orval": "^7.0.0"
+  }
+}

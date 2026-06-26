@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  nexus-converter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexus-converter
+    ports:
+      - "80:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - TMP_DIR=/app/tmp
+      - MAX_FILE_SIZE_MB=500
+    volumes:
+      - tmp_data:/app/tmp
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  tmp_data:

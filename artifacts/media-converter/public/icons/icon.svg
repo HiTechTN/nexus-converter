@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a1a"/>
+      <stop offset="100%" stop-color="#12122a"/>
+    </linearGradient>
+    <linearGradient id="border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e94560"/>
+      <stop offset="50%" stop-color="#0f3460"/>
+      <stop offset="100%" stop-color="#e94560"/>
+    </linearGradient>
+  </defs>
+  <!-- Fond -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="96" fill="none" stroke="url(#border)" stroke-width="16"/>
+  <!-- Hexagone extérieur -->
+  <polygon points="256,48 448,132 448,380 256,464 64,380 64,132"
+    fill="none" stroke="#e94560" stroke-width="12" stroke-linejoin="round"/>
+  <!-- Hexagone intérieur -->
+  <polygon points="256,112 384,176 384,336 256,400 128,336 128,176"
+    fill="none" stroke="#0f3460" stroke-width="6" stroke-linejoin="round"/>
+  <!-- Cercle central -->
+  <circle cx="256" cy="256" r="60" fill="none" stroke="#e94560" stroke-width="8"/>
+  <circle cx="256" cy="256" r="20" fill="#e94560"/>
+  <!-- Lignes de balayage -->
+  <line x1="140" y1="160" x2="372" y2="352" stroke="rgba(233,69,96,0.15)" stroke-width="4"/>
+  <line x1="372" y1="160" x2="140" y2="352" stroke="rgba(233,69,96,0.15)" stroke-width="4"/>
+  <!-- Points -->
+  <circle cx="256" cy="48" r="8" fill="#e94560"/>
+  <circle cx="256" cy="464" r="8" fill="#e94560"/>
+  <circle cx="448" cy="132" r="8" fill="#e94560"/>
+  <circle cx="64" cy="132" r="8" fill="#e94560"/>
+  <circle cx="448" cy="380" r="8" fill="#e94560"/>
+  <circle cx="64" cy="380" r="8" fill="#e94560"/>
+  <!-- Lettre N -->
+  <text x="256" y="280" font-family="Orbitron, monospace" font-size="80"
+    font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="central">N</text>
+</svg>

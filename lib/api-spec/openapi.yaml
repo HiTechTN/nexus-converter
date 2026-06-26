@@ -1,0 +1,349 @@
+openapi: "3.1.0"
+info:
+  title: Nexus Converter API
+  description: API de téléchargement et conversion de médias (yt-dlp + FFmpeg)
+  version: "1.0.0"
+  contact:
+    name: Nexus Converter
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: /
+    description: Production server (same origin)
+
+tags:
+  - name: Media
+    description: Opérations de conversion de médias
+  - name: Health
+    description: Health check
+
+paths:
+  /api/healthz:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /api/media/info:
+    post:
+      tags: [Media]
+      summary: Récupérer les métadonnées d'une URL
+      operationId: getMediaInfo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MediaInfoRequest"
+      responses:
+        "200":
+          description: Métadonnées récupérées
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaInfoResponse"
+        "400":
+          description: Requête invalide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Erreur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/media/convert:
+    post:
+      tags: [Media]
+      summary: Démarrer une conversion à partir d'une URL
+      operationId: startConversion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConvertRequest"
+      responses:
+        "201":
+          description: Conversion démarrée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConvertResponse"
+        "400":
+          description: Requête invalide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Erreur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/media/progress/{jobId}:
+    get:
+      tags: [Media]
+      summary: Flux SSE de progression d'un job
+      operationId: getProgress
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: SSE stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        "404":
+          description: Job non trouvé
+
+  /api/media/download/{jobId}:
+    get:
+      tags: [Media]
+      summary: Télécharger le fichier converti
+      operationId: downloadFile
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Fichier converti
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Job ou fichier non trouvé
+        "400":
+          description: Conversion pas encore terminée
+
+  /api/media/upload:
+    post:
+      tags: [Media]
+      summary: Uploader un fichier local pour conversion
+      operationId: uploadFile
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Fichier à convertir
+                format:
+                  type: string
+                  enum: [mp4, mkv, mp3, wav]
+                  description: Format de sortie souhaité
+                quality:
+                  type: string
+                  enum: [480p, 720p, 1080p, 4k, best]
+                  description: Qualité souhaitée
+      responses:
+        "201":
+          description: Upload réussi, conversion démarrée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConvertResponse"
+        "400":
+          description: Fichinvalide ou trop volumineux
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Erreur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, timestamp]
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+        uptime:
+          type: number
+        checks:
+          $ref: "#/components/schemas/HealthChecks"
+
+    HealthChecks:
+      type: object
+      properties:
+        yt-dlp:
+          type: boolean
+        ffmpeg:
+          type: boolean
+        tmp_dir:
+          type: boolean
+
+    MediaInfoRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: URL de la vidéo/audio à analyser
+
+    MediaInfoResponse:
+      type: object
+      required: [title, url, duration, formats]
+      properties:
+        title:
+          type: string
+          description: Titre du média
+        url:
+          type: string
+          format: uri
+          description: URL source
+        duration:
+          type: number
+          description: Durée en secondes
+        thumbnail:
+          type: string
+          format: uri
+          description: URL de la miniature
+        formats:
+          type: array
+          items:
+            $ref: "#/components/schemas/FormatInfo"
+        webpage_url:
+          type: string
+          format: uri
+          description: URL de la page web
+
+    FormatInfo:
+      type: object
+      properties:
+        format_id:
+          type: string
+        ext:
+          type: string
+        resolution:
+          type: string
+        filesize:
+          type: number
+        format_note:
+          type: string
+        vcodec:
+          type: string
+        acodec:
+          type: string
+        fps:
+          type: number
+
+    ConvertRequest:
+      type: object
+      required: [url, format]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: URL du média à convertir
+        format:
+          type: string
+          enum: [mp4, mkv, mp3, wav]
+          description: Format de sortie
+        quality:
+          type: string
+          enum: [480p, 720p, 1080p, 4k, best]
+          default: best
+          description: Qualité souhaitée
+
+    ConvertResponse:
+      type: object
+      required: [jobId, status]
+      properties:
+        jobId:
+          type: string
+          format: uuid
+          description: Identifiant du job de conversion
+        status:
+          type: string
+          enum: [queued, processing, completed, failed]
+        fileName:
+          type: string
+          description: Nom du fichier de sortie
+        message:
+          type: string
+          description: Message d'information
+
+    SSEEvent:
+      type: object
+      properties:
+        event:
+          type: string
+          enum: [progress, complete, error, info]
+        data:
+          type: object
+          properties:
+            percent:
+              type: number
+              description: Pourcentage de progression (0-100)
+            speed:
+              type: string
+              description: Vitesse de conversion (ex: "2.5x")
+            eta:
+              type: number
+              description: Temps restant estimé en secondes
+            message:
+              type: string
+              description: Message d'étape
+            fileName:
+              type: string
+              description: Nom du fichier final (event: complete)
+            fileSize:
+              type: number
+              description: Taille du fichier en octets (event: complete)
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Message d'erreur
+        code:
+          type: string
+          description: Code d'erreur
+        details:
+          type: string
+          description: Détails supplémentaires

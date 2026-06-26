@@ -1,0 +1,50 @@
+{
+  "name": "NEXUS Converter",
+  "short_name": "NEXUS",
+  "description": "Application de téléchargement et conversion de médias — 1000+ sites supportés",
+  "start_url": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#0a0a1a",
+  "theme_color": "#e94560",
+  "orientation": "any",
+  "categories": ["multimedia", "utilities", "productivity"],
+  "lang": "fr",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "splash_pages": null,
+  "shortcuts": [
+    {
+      "name": "Nouvelle conversion",
+      "short_name": "Convertir",
+      "description": "Démarrer une nouvelle conversion",
+      "url": "/",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

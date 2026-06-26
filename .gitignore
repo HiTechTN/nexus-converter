@@ -1,0 +1,26 @@
+node_modules/
+dist/
+.turbo/
+.env
+*.local
+
+# Temporary files
+tmp/
+*.mp4
+*.mkv
+*.mp3
+*.wav
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*

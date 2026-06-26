@@ -1,0 +1,21 @@
+{
+  "name": "nexus-converter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Application web full-stack de téléchargement et conversion de médias",
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter @workspace/api-server run dev\" \"pnpm --filter @workspace/media-converter run dev\"",
+    "build": "pnpm --filter @workspace/api-zod run build && pnpm --filter @workspace/api-client-react run build && pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/media-converter run build",
+    "codegen": "pnpm --filter @workspace/api-spec run codegen",
+    "start": "pnpm --filter @workspace/api-server run start",
+    "lint": "pnpm -r run lint",
+    "clean": "pnpm -r run clean"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.4.0"
+  }
+}

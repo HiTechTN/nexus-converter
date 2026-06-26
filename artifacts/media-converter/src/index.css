@@ -1,0 +1,200 @@
+@import "tailwindcss";
+
+/* ─── Theme Colors ─────────────────────────────────────────────────────────── */
+
+:root {
+  --color-primary: #e94560;
+  --color-secondary: #0f3460;
+  --color-bg-dark: #0a0a1a;
+  --color-bg-card: #12122a;
+  --color-bg-card-hover: #1a1a3e;
+  --color-text: #e0e0ff;
+  --color-text-muted: #8888aa;
+  --color-accent: #16213e;
+  --color-success: #00ff88;
+  --color-warning: #ffaa00;
+  --color-border: #2a2a4a;
+  --color-glow: rgba(233, 69, 96, 0.4);
+}
+
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
+
+body {
+  margin: 0;
+  font-family: "Rajdhani", "Segoe UI", sans-serif;
+  background-color: var(--color-bg-dark);
+  color: var(--color-text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Font Classes ─────────────────────────────────────────────────────────── */
+
+.font-display {
+  font-family: "Orbitron", monospace;
+}
+
+.font-body {
+  font-family: "Rajdhani", sans-serif;
+}
+
+/* ─── Custom Scrollbar ─────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* ─── Animations ───────────────────────────────────────────────────────────── */
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--color-glow), 0 0 10px var(--color-glow);
+  }
+  50% {
+    box-shadow: 0 0 15px var(--color-glow), 0 0 30px var(--color-glow);
+  }
+}
+
+@keyframes scan-line {
+  0% { top: -2px; }
+  100% { top: 100%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes hex-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes border-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ─── Custom Utility Classes ───────────────────────────────────────────────── */
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+.glow-border {
+  position: relative;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary), var(--color-primary));
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.glass-card {
+  background: rgba(18, 18, 42, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(42, 42, 74, 0.5);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 15px var(--color-glow), 0 0 30px var(--color-glow);
+}
+
+/* ─── Progress Bar ─────────────────────────────────────────────────────────── */
+
+.progress-bar {
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-success));
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+/* ─── Neon text effect ─────────────────────────────────────────────────────── */
+
+.neon-text {
+  text-shadow:
+    0 0 7px var(--color-primary),
+    0 0 10px var(--color-primary),
+    0 0 21px var(--color-primary),
+    0 0 42px var(--color-glow);
+}
+
+/* ─── Drop Zone ────────────────────────────────────────────────────────────── */
+
+.drop-zone {
+  border: 2px dashed var(--color-border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.drop-zone:hover,
+.drop-zone.active {
+  border-color: var(--color-primary);
+  background: rgba(233, 69, 96, 0.05);
+  box-shadow: 0 0 20px var(--color-glow);
+}
