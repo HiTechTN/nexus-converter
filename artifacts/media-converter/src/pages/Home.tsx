@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useMemo, type DragEvent } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect, type DragEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   useMediaInfo,
@@ -24,8 +24,11 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
   const [dragActive, setDragActive] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [showPlayer, setShowPlayer] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const urlInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = GamingUI.useToast();
 
   // ─── Mutations ────────────────────────────────────────────────────────────
   const mediaInfoMutation = useMediaInfo();
@@ -42,6 +45,25 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
     duration?: number;
   } | null>(null);
 
+  // Simulate loading
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), 400);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Keyboard shortcut: Enter to convert
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && e.ctrlKey) {
+        e.preventDefault();
+        if (activeTab === "url") handleConvert();
+        else handleUpload();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  });
+
   // ─── Handlers ─────────────────────────────────────────────────────────────
 
   const handleFetchInfo = useCallback(async () => {
@@ -55,9 +77,9 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
       });
     } catch (err) {
       setMediaInfo(null);
-      console.error("Failed to fetch media info:", err);
+      toast("Impossible de récupérer les infos du média", "error");
     }
-  }, [url, mediaInfoMutation]);
+  }, [url, mediaInfoMutation, toast]);
 
   const handleConvert = useCallback(async () => {
     if (!url.trim()) return;
@@ -69,9 +91,9 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
       });
       onJobStart(result.jobId, format);
     } catch (err) {
-      console.error("Failed to start conversion:", err);
+      toast("Échec du démarrage de la conversion", "error");
     }
-  }, [url, format, quality, convertMutation, onJobStart]);
+  }, [url, format, quality, convertMutation, onJobStart, toast]);
 
   const handleUpload = useCallback(async () => {
     if (!uploadFile) return;
@@ -83,9 +105,9 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
       const result = await uploadMutation.mutateAsync(formData);
       onJobStart(result.jobId, format);
     } catch (err) {
-      console.error("Upload failed:", err);
+      toast("Échec de l'upload", "error");
     }
-  }, [uploadFile, format, quality, uploadMutation, onJobStart]);
+  }, [uploadFile, format, quality, uploadMutation, onJobStart, toast]);
 
   const handleDrag = useCallback((e: DragEvent) => {
     e.preventDefault();
@@ -107,6 +129,16 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
     }
   }, []);
 
+  // Auto-fetch on paste
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    const pasted = e.clipboardData.getData("text");
+    setTimeout(() => {
+      if (pasted && pasted !== url) {
+        handleFetchInfo();
+      }
+    }, 150);
+  }, [url, handleFetchInfo]);
+
   const formatDuration = (seconds?: number): string => {
     if (!seconds) return "--:--";
     const m = Math.floor(seconds / 60);
@@ -117,7 +149,6 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
   // ─── URL de téléchargement pour le lecteur ────────────────────────────────
   const downloadUrl = useMemo(() => {
     if (!jobId) return "";
-    // Use the origin to ensure correct URL whether in dev or prod
     const base = typeof window !== "undefined" ? window.location.origin : "";
     return `${base}/api/media/download/${jobId}`;
   }, [jobId]);
@@ -166,7 +197,6 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
                 src={downloadUrl}
                 fileName={sseProgress.fileName || `converted.${currentFormat}`}
                 onDownload={() => {
-                  // Déclencher le téléchargement via une ancre invisible
                   const a = document.createElement("a");
                   a.href = downloadUrl;
                   a.download = sseProgress.fileName || `converted.${currentFormat}`;
@@ -213,6 +243,7 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
+            <p className="text-[#e94560] text-sm font-body mb-4">{sseProgress.message || "La conversion a échoué"}</p>
             <button
               onClick={() => window.location.reload()}
               className="px-6 py-2 border border-[#e94560]/50 text-[#e94560] font-display text-sm rounded-lg hover:bg-[#e94560]/10 transition-all"
@@ -223,6 +254,11 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
         )}
       </motion.div>
     );
+  }
+
+  // ─── Loading skeleton ───────────────────────────────────────────────────
+  if (isLoading) {
+    return <GamingUI.ConverterSkeleton />;
   }
 
   // ─── Main UI (no active job) ──────────────────────────────────────────────
@@ -255,6 +291,9 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
           <span className="px-2 py-1 border border-[#2a2a4a] rounded">Twitch</span>
           <span className="px-2 py-1 border border-[#2a2a4a] rounded">+1000 autres</span>
         </div>
+        <p className="text-[#555577] text-[10px] font-body">
+          <kbd className="px-1 bg-[#1a1a2e] rounded">Ctrl</kbd>+<kbd className="px-1 bg-[#1a1a2e] rounded">Enter</kbd> pour lancer
+        </p>
       </div>
 
       {/* Tabs: URL / Upload */}
@@ -277,7 +316,24 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
       </div>
 
       {/* Converter Card */}
-      <div className="glass-card rounded-xl p-6 md:p-8 max-w-2xl mx-auto">
+      <div className="glass-card rounded-xl p-6 md:p-8 max-w-2xl mx-auto relative">
+        {/* Drag overlay */}
+        <AnimatePresence>
+          {dragActive && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-10 bg-[#e94560]/10 backdrop-blur-sm rounded-xl flex items-center justify-center border-2 border-dashed border-[#e94560]"
+            >
+              <div className="text-center">
+                <p className="text-5xl mb-3">📂</p>
+                <p className="font-display text-lg text-white">Déposez votre fichier ici</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <AnimatePresence mode="wait">
           {activeTab === "url" ? (
             <motion.div
@@ -294,16 +350,16 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
                 </label>
                 <div className="flex gap-2">
                   <input
+                    ref={urlInputRef}
                     type="url"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    onPaste={(e) => {
-                      const pasted = e.clipboardData.getData("text");
-                      setTimeout(() => {
-                        if (pasted && pasted !== url) {
-                          handleFetchInfo();
-                        }
-                      }, 100);
+                    onPaste={handlePaste}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.ctrlKey) {
+                        e.preventDefault();
+                        handleFetchInfo();
+                      }
                     }}
                     placeholder="https://www.youtube.com/watch?v=..."
                     className="flex-1 px-4 py-3 bg-[#0a0a1a] border border-[#2a2a4a] rounded-lg text-white font-body text-sm
@@ -330,7 +386,21 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
 
               {/* Media Info Preview */}
               <AnimatePresence>
-                {mediaInfo && (
+                {mediaInfoMutation.isPending && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="flex items-center gap-4 p-3 bg-[#0a0a1a] border border-[#2a2a4a] rounded-lg"
+                  >
+                    <GamingUI.Skeleton className="w-16 h-10 rounded" />
+                    <div className="flex-1 space-y-2">
+                      <GamingUI.Skeleton className="h-4 w-3/4" />
+                      <GamingUI.Skeleton className="h-3 w-1/4" />
+                    </div>
+                  </motion.div>
+                )}
+                {mediaInfo && !mediaInfoMutation.isPending && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
@@ -375,7 +445,7 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
                 className={`
-                  drop-zone p-8 text-center transition-all
+                  drop-zone p-8 text-center transition-all cursor-pointer
                   ${dragActive ? "active border-[#e94560]" : ""}
                   ${uploadFile ? "border-[#00ff88]/50 bg-[rgba(0,255,136,0.03)]" : ""}
                 `}
