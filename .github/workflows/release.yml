@@ -85,6 +85,30 @@ jobs:
           path: artifacts/api-server/dist/
           retention-days: 3
 
+      - name: Package web dist as zip
+        run: |
+          cd artifacts/media-converter
+          zip -r nexus-web-${{ steps.version.outputs.version }}.zip dist/
+
+      - name: Package api-server dist as zip
+        run: |
+          cd artifacts/api-server
+          zip -r nexus-api-server-${{ steps.version.outputs.version }}.zip dist/
+
+      - name: Upload web zip for release
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist-zip
+          path: artifacts/media-converter/nexus-web-*.zip
+          retention-days: 3
+
+      - name: Upload api-server zip for release
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-server-dist-zip
+          path: artifacts/api-server/nexus-api-server-*.zip
+          retention-days: 3
+
       - name: Extract version
         id: version
         run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
@@ -393,6 +417,16 @@ jobs:
         run: |
           mkdir -p release-assets
           VERSION="${{ needs.build-web.outputs.version }}"
+
+          # Web dist
+          if [ -d "release-artifacts/web-dist-zip" ]; then
+            cp release-artifacts/web-dist-zip/*.zip release-assets/ 2>/dev/null || true
+          fi
+
+          # API server dist
+          if [ -d "release-artifacts/api-server-dist-zip" ]; then
+            cp release-artifacts/api-server-dist-zip/*.zip release-assets/ 2>/dev/null || true
+          fi
 
           # Desktop Linux
           if [ -d "release-artifacts/desktop-linux" ]; then
