@@ -385,14 +385,18 @@ jobs:
           mkdir -p release-assets
           VERSION="${{ needs.build-web.outputs.version }}"
 
-          # Desktop Linux
+          # Desktop Linux — only package files, not *-unpacked/ dirs
           if [ -d "release-artifacts/desktop-linux" ]; then
-            cp -r release-artifacts/desktop-linux/* release-assets/ 2>/dev/null || true
+            find release-artifacts/desktop-linux -maxdepth 1 -type f \
+              \( -name "*.AppImage" -o -name "*.deb" -o -name "*.tar.gz" -o -name "*.rpm" \) \
+              -exec cp {} release-assets/ \;
           fi
 
-          # Desktop Windows
+          # Desktop Windows — only .exe and portable
           if [ -d "release-artifacts/desktop-windows" ]; then
-            cp -r release-artifacts/desktop-windows/* release-assets/ 2>/dev/null || true
+            find release-artifacts/desktop-windows -maxdepth 1 -type f \
+              \( -name "*.exe" \) \
+              -exec cp {} release-assets/ \;
           fi
 
           # Mobile Android
