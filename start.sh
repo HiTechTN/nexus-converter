@@ -88,18 +88,6 @@ export FRONTEND_PORT="$FRONTEND_PORT"
 
 # ─── Build des libs si nécessaire ───────────────────────────────────────────
 
-if [[ ! -d "lib/constants/dist" ]]; then
-  info "Build de @workspace/constants..."
-  pnpm --filter @workspace/constants run build
-  log "constants: build réussi"
-fi
-
-if [[ ! -d "lib/constants/dist" ]]; then
-  info "Build de @workspace/constants..."
-  pnpm --filter @workspace/constants run build
-  log "constants: build réussi"
-fi
-
 if [[ ! -d "lib/api-zod/dist" ]]; then
   info "Build de @workspace/api-zod..."
   pnpm --filter @workspace/api-zod run build
@@ -163,7 +151,7 @@ trap cleanup SIGINT SIGTERM
 PORT=$API_PORT FRONTEND_PORT=$FRONTEND_PORT pnpm --filter @workspace/api-server run dev &
 API_PID=$!
 
-VITE_API_PORT=$API_PORT PORT=$FRONTEND_PORT pnpm --filter @workspace/media-converter run dev &
+PORT=$FRONTEND_PORT pnpm --filter @workspace/media-converter run dev &
 FRONTEND_PID=$!
 
 # Attendre

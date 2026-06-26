@@ -19,7 +19,6 @@
     "clean": "rm -rf dist-electron dist release"
   },
   "dependencies": {
-    "@workspace/constants": "workspace:*",
     "electron-store": "^8.2.0"
   },
   "devDependencies": {

@@ -4,16 +4,12 @@ import healthRouter from "./routes/health.js";
 import mediaRouter from "./routes/media.js";
 import { checkYtDlp } from "./services/ytdlp.js";
 import { checkFfmpeg } from "./services/ffmpeg.js";
-import { requestLogger, errorLogger, clientDisconnectHandler } from "./middleware/logger.js";
-import { DEFAULT_API_PORT } from "@workspace/constants";
 
 const app = express();
-const PORT = parseInt(process.env.PORT || String(DEFAULT_API_PORT), 10);
+const PORT = parseInt(process.env.PORT || "3000", 10);
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
 
-app.use(clientDisconnectHandler);
-app.use(requestLogger);
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
@@ -30,7 +26,17 @@ app.use((_req, res) => {
 
 // ─── Error Handler ───────────────────────────────────────────────────────────
 
-app.use(errorLogger);
+app.use(
+  (
+    err: Error,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction
+  ) => {
+    console.error("Unhandled error:", err);
+    res.status(500).json({ error: "Erreur interne du serveur" });
+  }
+);
 
 // ─── Start ───────────────────────────────────────────────────────────────────
 

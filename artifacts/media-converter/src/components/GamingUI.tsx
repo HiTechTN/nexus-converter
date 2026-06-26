@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHealthCheck } from "@workspace/api-client-react";
 
-type ConnectionStatus = "online" | "degraded" | "offline";
-
 /* ─── Header Component ─────────────────────────────────────────────────────── */
 
 function Header({
@@ -14,13 +12,7 @@ function Header({
   onReset: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { data: health, isError, failureCount } = useHealthCheck();
-
-  const connectionStatus: ConnectionStatus = isError
-    ? "offline"
-    : health?.status === "ok"
-    ? "online"
-    : "degraded";
+  const { data: health } = useHealthCheck();
 
   return (
     <header className="border-b border-[#2a2a4a] bg-[#0a0a1a]/80 backdrop-blur-md sticky top-0 z-50">
@@ -49,19 +41,15 @@ function Header({
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           {/* Status indicator - hidden on very small screens */}
           <div className="items-center gap-2 text-xs font-body hidden sm:flex">
-            <StatusDot status={connectionStatus} />
+            <StatusDot status={health?.status || "ok"} />
             <span className="text-[#8888aa]">
-              {connectionStatus === "online"
-                ? "SYSTEM OK"
-                : connectionStatus === "degraded"
-                ? "DEGRADED"
-                : "OFFLINE"}
+              {health?.status === "ok" ? "SYSTEM OK" : "DEGRADED"}
             </span>
           </div>
 
           {/* Mini status dot for mobile */}
           <div className="sm:hidden">
-            <StatusDot status={connectionStatus} />
+            <StatusDot status={health?.status || "ok"} />
           </div>
 
           {/* Reset button */}
@@ -102,42 +90,13 @@ function Header({
         </div>
       </div>
 
-      {/* Offline warning banner */}
-      <AnimatePresence>
-        {connectionStatus === "offline" && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-[#e94560]/10 border-t border-[#e94560]/30"
-          >
-            <div className="container mx-auto px-4 py-1.5 flex items-center justify-center gap-2 text-xs font-body">
-              <div className="w-2 h-2 bg-[#e94560] rounded-full animate-pulse" />
-              <span className="text-[#e94560]">
-                API unreachable — running in degraded mode{failureCount > 1 ? ` (retry ${failureCount})` : ""}
-              </span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Status bar - desktop */}
       <div className="bg-[#12122a] border-t border-[#2a2a4a] px-4 py-1 hidden sm:block">
         <div className="container mx-auto flex items-center justify-between text-[10px] font-body text-[#666688]">
           <span>
             API:{" "}
-            <span className={
-              connectionStatus === "online"
-                ? "text-[#00ff88]"
-                : connectionStatus === "degraded"
-                ? "text-[#ffaa00]"
-                : "text-[#e94560]"
-            }>
-              {connectionStatus === "online"
-                ? "ONLINE"
-                : connectionStatus === "degraded"
-                ? "DEGRADED"
-                : "OFFLINE"}
+            <span className={health?.status === "ok" ? "text-[#00ff88]" : "text-[#ffaa00]"}>
+              {health?.status === "ok" ? "ONLINE" : "DEGRADED"}
             </span>
           </span>
           <span>
@@ -150,7 +109,7 @@ function Header({
               {health?.checks?.ffmpeg ? "✓" : "✗"}
             </span>
           </span>
-          <span className="hidden md:inline">UPTIME: {health ? formatUptime(health.uptime || 0) : "--"}</span>
+          <span className="hidden md:inline">UPTIME: {formatUptime(health?.uptime || 0)}</span>
           <span className="hidden md:inline">NEXUS v1.0</span>
         </div>
       </div>
@@ -167,18 +126,8 @@ function Header({
             <div className="px-4 py-3 space-y-2 text-xs font-body text-[#8888aa]">
               <div className="flex justify-between">
                 <span>API</span>
-                <span className={
-                  connectionStatus === "online"
-                    ? "text-[#00ff88]"
-                    : connectionStatus === "degraded"
-                    ? "text-[#ffaa00]"
-                    : "text-[#e94560]"
-                }>
-                  {connectionStatus === "online"
-                    ? "ONLINE"
-                    : connectionStatus === "degraded"
-                    ? "DEGRADED"
-                    : "OFFLINE"}
+                <span className={health?.status === "ok" ? "text-[#00ff88]" : "text-[#ffaa00]"}>
+                  {health?.status === "ok" ? "ONLINE" : "DEGRADED"}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -218,8 +167,8 @@ function HexIcon() {
   );
 }
 
-function StatusDot({ status }: { status: ConnectionStatus }) {
-  const color = status === "online" ? "#00ff88" : status === "degraded" ? "#ffaa00" : "#e94560";
+function StatusDot({ status }: { status: string }) {
+  const color = status === "ok" ? "#00ff88" : "#ffaa00";
   return (
     <span className="relative flex h-2 w-2">
       <span

@@ -7,7 +7,6 @@ import {
 } from "@workspace/api-client-react";
 import GamingUI from "../components/GamingUI";
 import MediaPlayer from "../components/MediaPlayer";
-import ApiErrorDisplay from "../components/ApiErrorDisplay";
 import { useSSE } from "../hooks/use-sse";
 
 interface HomeProps {
@@ -477,18 +476,24 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
         </motion.div>
 
         {/* Error display */}
-        <ApiErrorDisplay
-          error={convertMutation.isError ? convertMutation.error.message : null}
-          onDismiss={() => convertMutation.reset()}
-          onRetry={() => { convertMutation.reset(); handleConvert(); }}
-          className="mt-4"
-        />
-        <ApiErrorDisplay
-          error={uploadMutation.isError ? uploadMutation.error.message : null}
-          onDismiss={() => uploadMutation.reset()}
-          onRetry={() => { uploadMutation.reset(); handleUpload(); }}
-          className="mt-4"
-        />
+        {convertMutation.isError && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-4 text-sm text-[#e94560] font-body text-center"
+          >
+            {convertMutation.error.message}
+          </motion.p>
+        )}
+        {uploadMutation.isError && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-4 text-sm text-[#e94560] font-body text-center"
+          >
+            {uploadMutation.error.message}
+          </motion.p>
+        )}
       </div>
 
       {/* Features Grid */}

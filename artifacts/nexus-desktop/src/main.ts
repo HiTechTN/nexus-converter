@@ -11,7 +11,6 @@ import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { existsSync } from "fs";
 import { createServer } from "http";
-import { DEFAULT_ELECTRON_API_PORT } from "@workspace/constants";
 
 // ─── Path helpers ────────────────────────────────────────────────────────────
 
@@ -46,7 +45,7 @@ function rendererPath(): string {
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let apiProcess: ChildProcess | null = null;
-const API_PORT = parseInt(process.env.PORT || String(DEFAULT_ELECTRON_API_PORT), 10);
+const API_PORT = parseInt(process.env.PORT || "3099", 10); // port local par défaut
 let isQuitting = false;
 
 // ─── Serveur API ─────────────────────────────────────────────────────────────

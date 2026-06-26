@@ -5,7 +5,7 @@
   "description": "Application web full-stack de téléchargement et conversion de médias",
   "scripts": {
     "dev": "concurrently \"pnpm --filter @workspace/api-server run dev\" \"pnpm --filter @workspace/media-converter run dev\"",
-    "build": "pnpm --filter @workspace/constants run build && pnpm --filter @workspace/api-zod run build && pnpm --filter @workspace/api-client-react run build && pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/media-converter run build",
+    "build": "pnpm --filter @workspace/api-zod run build && pnpm --filter @workspace/api-client-react run build && pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/media-converter run build",
     "build:all": "pnpm run build && pnpm --filter @workspace/nexus-desktop run build:electron",
     "package:linux": "pnpm --filter @workspace/nexus-desktop run package:linux",
     "package:win": "pnpm --filter @workspace/nexus-desktop run package:win",
