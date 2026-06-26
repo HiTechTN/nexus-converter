@@ -8,7 +8,7 @@ Application full-stak de téléchargement et conversion de médias.
 
 ```bash
 # Une seule commande — tout est automatisé
-curl -fsSL https://github.com/HiTechTN/nexus-converter/releases/latest/download/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/HiTechTN/nexus-converter/main/install.sh | bash
 ```
 
 ### 📦 Téléchargements
@@ -46,6 +46,20 @@ curl -fsSL https://github.com/HiTechTN/nexus-converter/releases/latest/download/
 
 <details>
 <summary>📋 Notes de version</summary>
+
+### v1.2.0
+- Correction: LICENSE ajoutée pour les builds .deb
+- Correction: artifactName personnalisé pour les binaires desktop
+- Correction: install.sh utilise GitHub archive au lieu d'un tarball inexistant
+- Correction: .gitignore étendu (tsbuildinfo, icônes générées)
+- Synchronisation des versions de tous les packages en 1.1.0
+
+### v1.1.0
+- Ajout du package desktop Electron (AppImage, deb, rpm, tar.gz)
+- Ajout du package mobile Capacitor (Android, iOS)
+- Pipeline CI/CD complet (GitHub Actions)
+- Landing page avec curl one-liner
+- Correctifs de build pour api-zod, api-client-react, api-server, media-converter
 
 ### v1.0.0
 - Première release officielle
