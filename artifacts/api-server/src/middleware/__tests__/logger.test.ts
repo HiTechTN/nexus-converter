@@ -3,17 +3,13 @@ import type { Request, Response, NextFunction } from "express";
 import { requestLogger, errorLogger, clientDisconnectHandler } from "../logger.js";
 
 function createMockReq(overrides: Partial<Request> = {}): Request {
-  const listeners: Record<string, Function[]> = {};
   return {
     method: "GET",
     path: "/api/test",
     on: vi.fn((event: string, cb: Function) => {
-      if (!listeners[event]) listeners[event] = [];
-      listeners[event].push(cb);
       return {} as any;
     }),
     ...overrides,
-    _listeners: listeners,
   } as unknown as Request;
 }
 
@@ -21,9 +17,7 @@ function createMockRes(): Response {
   const res = {
     statusCode: 200,
     headersSent: false,
-    end: vi.fn(function (this: any, ...args: any[]) {
-      return this;
-    }),
+    end: vi.fn(),
     writeHead: vi.fn(),
     json: vi.fn(),
     status: vi.fn().mockReturnThis(),
@@ -138,6 +132,26 @@ describe("errorLogger", () => {
     errorLogger(new Error("Test"), req, res, next);
 
     expect(res.json).not.toHaveBeenCalled();
+  });
+
+  it("omits message field in production mode", () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    const req = createMockReq();
+    const res = createMockRes();
+    const next = vi.fn();
+    const err = new Error("Sensitive error");
+
+    errorLogger(err, req, res, next);
+
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: "Erreur interne du serveur",
+      })
+    );
+    const callArgs = (res.json as any).mock.calls[0][0];
+    expect(callArgs).not.toHaveProperty("message");
+    process.env.NODE_ENV = originalEnv;
   });
 
   it("detects ECONNRESET errors", () => {

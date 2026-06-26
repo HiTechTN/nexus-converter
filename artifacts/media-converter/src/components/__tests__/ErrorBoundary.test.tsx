@@ -46,7 +46,7 @@ describe("ErrorBoundary", () => {
     expect(screen.queryByText("ERREUR CRITIQUE")).not.toBeInTheDocument();
   });
 
-  it("resets error state when RÉESSAYER is clicked", () => {
+  it("recovers when child stops throwing after reset", () => {
     const { rerender } = render(
       <ErrorBoundary>
         <ThrowingComponent message="Test crash" />
