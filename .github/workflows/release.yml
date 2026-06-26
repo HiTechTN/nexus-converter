@@ -155,7 +155,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: desktop-linux
-          path: artifacts/nexus-desktop/release/
+          path: |
+            artifacts/nexus-desktop/release/*.AppImage
+            artifacts/nexus-desktop/release/*.deb
+            artifacts/nexus-desktop/release/*.tar.gz
+            artifacts/nexus-desktop/release/*.rpm
+            artifacts/nexus-desktop/release/*.yml
+            artifacts/nexus-desktop/release/*.blockmap
           retention-days: 3
 
   # ──────────────────────────────────────────────────────────────────────────
@@ -211,7 +217,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: desktop-windows
-          path: artifacts/nexus-desktop/release/
+          path: |
+            artifacts/nexus-desktop/release/*.exe
+            artifacts/nexus-desktop/release/*.yml
+            artifacts/nexus-desktop/release/*.blockmap
           retention-days: 3
 
   # ──────────────────────────────────────────────────────────────────────────
@@ -385,18 +394,14 @@ jobs:
           mkdir -p release-assets
           VERSION="${{ needs.build-web.outputs.version }}"
 
-          # Desktop Linux — only package files, not *-unpacked/ dirs
+          # Desktop Linux
           if [ -d "release-artifacts/desktop-linux" ]; then
-            find release-artifacts/desktop-linux -maxdepth 1 -type f \
-              \( -name "*.AppImage" -o -name "*.deb" -o -name "*.tar.gz" -o -name "*.rpm" \) \
-              -exec cp {} release-assets/ \;
+            cp release-artifacts/desktop-linux/* release-assets/ 2>/dev/null || true
           fi
 
-          # Desktop Windows — only .exe and portable
+          # Desktop Windows
           if [ -d "release-artifacts/desktop-windows" ]; then
-            find release-artifacts/desktop-windows -maxdepth 1 -type f \
-              \( -name "*.exe" \) \
-              -exec cp {} release-assets/ \;
+            cp release-artifacts/desktop-windows/* release-assets/ 2>/dev/null || true
           fi
 
           # Mobile Android
@@ -408,12 +413,11 @@ jobs:
 
           # Mobile iOS
           if [ -d "release-artifacts/mobile-ios" ]; then
-            mkdir -p release-assets/ios
-            cp release-artifacts/mobile-ios/*.ipa release-assets/ios/ 2>/dev/null || true
+            cp release-artifacts/mobile-ios/*.ipa release-assets/ 2>/dev/null || true
           fi
 
           echo "=== Release assets ==="
-          find release-assets -type f -ls
+          ls -lh release-assets/
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
