@@ -407,8 +407,8 @@ jobs:
           # Mobile Android
           if [ -d "release-artifacts/mobile-android" ]; then
             mkdir -p release-assets/android
-            cp release-artifacts/mobile-android/*.apk release-assets/android/ 2>/dev/null || true
-            cp release-artifacts/mobile-android/*.aab release-assets/android/ 2>/dev/null || true
+            find release-artifacts/mobile-android -name "*.apk" -exec cp {} release-assets/android/ \;
+            find release-artifacts/mobile-android -name "*.aab" -exec cp {} release-assets/android/ \;
           fi
 
           # Mobile iOS
