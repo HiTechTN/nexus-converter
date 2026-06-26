@@ -18,8 +18,8 @@ interface HomeProps {
 export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
   // ─── State ────────────────────────────────────────────────────────────────
   const [url, setUrl] = useState("");
-  const [format, setFormat] = useState(currentFormat || "mp4");
-  const [quality, setQuality] = useState("best");
+  const [format, setFormat] = useState<"mp4" | "mkv" | "mp3" | "wav">(currentFormat as "mp4" | "mkv" | "mp3" | "wav" || "mp4");
+  const [quality, setQuality] = useState<"480p" | "720p" | "1080p" | "4k" | "best">("best");
   const [activeTab, setActiveTab] = useState<"url" | "upload">("url");
   const [dragActive, setDragActive] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -425,7 +425,7 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
               Format
             </span>
             <div className="flex gap-2">
-              {["mp4", "mkv", "mp3", "wav"].map((fmt) => (
+              {(["mp4", "mkv", "mp3", "wav"] as const).map((fmt) => (
                 <GamingUI.FormatBadge
                   key={fmt}
                   format={fmt}
@@ -436,7 +436,7 @@ export default function Home({ jobId, onJobStart, currentFormat }: HomeProps) {
             </div>
           </div>
 
-          <GamingUI.QualitySelector quality={quality} onChange={setQuality} />
+          <GamingUI.QualitySelector quality={quality} onChange={(q) => setQuality(q as "480p" | "720p" | "1080p" | "4k" | "best")} />
         </div>
 
         {/* Convert Button */}

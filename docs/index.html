@@ -646,34 +646,42 @@
     <!-- Auto -->
     <div class="install-panel active" id="panel-auto">
       <div class="install-card">
-        <h3><span class="step-num">1</span> Cloner le dépôt</h3>
+        <h3><span class="step-num">⚡</span> Option 1 — Une commande (curl)</h3>
+        <p>La méthode la plus rapide — une seule ligne de commande suffit :</p>
         <div class="code-block">
           <code>
-            <span class="comment"># Via HTTPS</span><br/>
+            <span class="comment"># Télécharge + installe tout automatiquement</span><br/>
+            <span style="color:#00ff88;">curl -fsSL https://github.com/HiTechTN/nexus-converter/releases/latest/download/install.sh | bash</span>
+          </code>
+          <button class="copy-btn" data-cmd="curl -fsSL https://github.com/HiTechTN/nexus-converter/releases/latest/download/install.sh | bash">Copier</button>
+        </div>
+        <p style="margin-top:8px;">Le script détecte votre OS, installe les prérequis (Node.js, pnpm, FFmpeg, yt-dlp), et configure tout automatiquement.</p>
+
+        <h3 style="margin-top:24px;"><span class="step-num">2</span> Démarrer l'application</h3>
+        <div class="code-block">
+          <code>
+            cd ~/nexus-converter &amp;&amp; ./start.sh
+          </code>
+          <button class="copy-btn" data-cmd="cd ~/nexus-converter && ./start.sh">Copier</button>
+        </div>
+
+        <p style="margin-top:16px;">✨ L'application sera accessible sur <strong style="color:#e94560;">http://localhost:3000</strong></p>
+
+        <div style="border-top:1px solid #2a2a4a;margin:24px 0;"></div>
+
+        <h3><span class="step-num">📦</span> Option 2 — Via Git (pour contributeurs)</h3>
+        <div class="code-block">
+          <code>
+            <span class="comment"># Cloner le dépôt</span><br/>
             git clone https://github.com/HiTechTN/nexus-converter.git<br/>
-            cd nexus-converter
-          </code>
-          <button class="copy-btn" data-cmd="git clone https://github.com/HiTechTN/nexus-converter.git && cd nexus-converter">Copier</button>
-        </div>
-
-        <h3><span class="step-num">2</span> Lancer l'installateur automatique</h3>
-        <p>Le script détecte votre OS (Linux/macOS/Windows), installe Node.js, pnpm, FFmpeg, Python, yt-dlp et configure les ports automatiquement.</p>
-        <div class="code-block">
-          <code>
-            ./install.sh
-          </code>
-          <button class="copy-btn" data-cmd="./install.sh">Copier</button>
-        </div>
-
-        <h3><span class="step-num">3</span> Démarrer l'application</h3>
-        <div class="code-block">
-          <code>
+            cd nexus-converter<br/><br/>
+            <span class="comment"># Lancer l'installateur</span><br/>
+            ./install.sh<br/><br/>
+            <span class="comment"># Démarrer</span><br/>
             ./start.sh
           </code>
-          <button class="copy-btn" data-cmd="./start.sh">Copier</button>
+          <button class="copy-btn" data-cmd="git clone https://github.com/HiTechTN/nexus-converter.git && cd nexus-converter && ./install.sh && ./start.sh">Copier</button>
         </div>
-
-        <p style="margin-top:16px;">✨ L'application sera accessible sur <strong style="color:#e94560;">http://localhost:5173</strong></p>
       </div>
     </div>
 

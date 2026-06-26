@@ -4,7 +4,38 @@ set -euo pipefail
 # ═══════════════════════════════════════════════════════════════════════════════
 # NEXUS CONVERTER — Installateur automatique complet
 # Détection OS • Installation prérequis • Configuration ports • Build
+#
+# Usage:
+#   ./install.sh              # Installation locale (dans le dépôt cloné)
+#   curl -fsSL https://github.com/HiTechTN/nexus-converter/releases/latest/download/install.sh | bash
+#                             # Installation via curl (télécharge + installe)
 # ═══════════════════════════════════════════════════════════════════════════════
+
+# ─── Détection curl one-liner ────────────────────────────────────────────────
+# Si le script est pipé via curl (pas de fichier), on télécharge d'abord le code
+if [[ "$0" == "bash" || "$0" == "sh" || ! -f "$0" ]]; then
+  echo ""
+  echo "╔══════════════════════════════════════════════════════════╗"
+  echo "║     NEXUS CONVERTER — Téléchargement via curl            ║"
+  echo "╚══════════════════════════════════════════════════════════╝"
+  echo ""
+
+  INSTALL_DIR="${HOME}/nexus-converter"
+  VERSION="1.0.0"
+
+  echo "[i] Création du dossier ${INSTALL_DIR}..."
+  mkdir -p "$INSTALL_DIR"
+
+  echo "[i] Téléchargement de la release v${VERSION}..."
+  curl -fsSL "https://github.com/HiTechTN/nexus-converter/releases/download/v${VERSION}/nexus-converter-v${VERSION}.tar.gz" \
+    | tar xz --strip-components=1 -C "$INSTALL_DIR"
+
+  echo "[✓] Code téléchargé dans ${INSTALL_DIR}"
+  echo ""
+  cd "$INSTALL_DIR"
+  exec bash "$INSTALL_DIR/install.sh"
+  exit 0
+fi
 
 # ─── Couleurs ────────────────────────────────────────────────────────────────
 BOLD="\033[1m"

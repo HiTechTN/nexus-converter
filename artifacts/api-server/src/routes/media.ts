@@ -168,10 +168,12 @@ router.get("/api/media/download/:jobId", (req: Request, res: Response) => {
 
   stream.on("end", () => {
     // Clean up the temporary file after download
-    try {
-      unlinkSync(job.filePath);
-    } catch {
-      // ignore
+    if (job.filePath) {
+      try {
+        unlinkSync(job.filePath);
+      } catch {
+        // ignore
+      }
     }
   });
 });

@@ -134,8 +134,8 @@ export default function MediaPlayer({
         // Fallback pour iOS Safari
         try {
           const media = mediaRef.current;
-          if (media && media.webkitEnterFullscreen) {
-            media.webkitEnterFullscreen();
+          if (media && "webkitEnterFullscreen" in media) {
+            (media as HTMLVideoElement & { webkitEnterFullscreen: () => void }).webkitEnterFullscreen();
             setIsFullscreen(true);
           }
         } catch {
