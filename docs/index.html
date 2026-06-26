@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="NEXUS CONVERTER - Application full-stack de téléchargement et conversion de médias. Supporte 1000+ sites (YouTube, TikTok, Instagram, Twitch...)." />
+  <meta name="theme-color" content="#0a0a1a" />
+  <meta property="og:title" content="NEXUS CONVERTER" />
+  <meta property="og:description" content="Application full-stack de téléchargement et conversion de médias" />
+  <meta property="og:type" content="website" />
+  <title>NEXUS CONVERTER — Conversion de médias</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════════
+       RESET & BASE
+       ═══════════════════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: #0a0a1a;
+      color: #e0e0ff;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a { color: #e94560; text-decoration: none; transition: color 0.2s; }
+    a:hover { color: #ff6b81; }
+    img { max-width: 100%; display: block; }
+    code { font-family: 'Courier New', monospace; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       UTILITIES
+       ═══════════════════════════════════════════════════════════════════════ */
+    .font-display { font-family: 'Orbitron', monospace; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .section { padding: 80px 0; }
+    .section-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 12px;
+      letter-spacing: 2px;
+    }
+    .section-title span { color: #e94560; }
+    .section-subtitle {
+      text-align: center;
+      color: #8888aa;
+      font-size: 1.1rem;
+      margin-bottom: 48px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .section-divider {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #e94560, #0f3460);
+      margin: 16px auto 32px;
+      border-radius: 2px;
+    }
+    .glass-card {
+      background: rgba(18, 18, 42, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(42, 42, 74, 0.5);
+      border-radius: 16px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-family: 'Orbitron', monospace;
+      letter-spacing: 1px;
+    }
+    .badge-red { background: #e94560; color: white; }
+    .badge-blue { background: #0f3460; color: white; }
+    .badge-green { background: #00ff88; color: #0a0a1a; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       ANIMATIONS
+       ═══════════════════════════════════════════════════════════════════════ */
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+    @keyframes pulse-glow { 0%,100%{box-shadow:0 0 10px rgba(233,69,96,0.3)} 50%{box-shadow:0 0 30px rgba(233,69,96,0.6)} }
+    @keyframes spin-slow { to { transform: rotate(360deg); } }
+    @keyframes gradient-shift {
+      0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+    @keyframes typing { from { width: 0 } to { width: 100% } }
+    @keyframes blink { 50% { border-color: transparent } }
+    .animate-float { animation: float 4s ease-in-out infinite; }
+    .animate-gradient { background-size: 200% 200%; animation: gradient-shift 4s ease infinite; }
+    .fade-in-up { animation: fadeInUp 0.8s ease forwards; opacity: 0; }
+    .fade-in-up:nth-child(2) { animation-delay: 0.2s; }
+    .fade-in-up:nth-child(3) { animation-delay: 0.4s; }
+    .fade-in-up:nth-child(4) { animation-delay: 0.6s; }
+    .fade-in-up:nth-child(5) { animation-delay: 0.8s; }
+    .fade-in-up:nth-child(6) { animation-delay: 1.0s; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       BACKGROUND
+       ═══════════════════════════════════════════════════════════════════════ */
+    .bg-particles {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .bg-particles span {
+      position: absolute; width: 4px; height: 4px;
+      background: rgba(233,69,96,0.15); border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+    .bg-particles span:nth-child(1) { left:10%; top:20%; animation-delay:0s; }
+    .bg-particles span:nth-child(2) { left:25%; top:60%; animation-delay:1s; width:6px; height:6px; }
+    .bg-particles span:nth-child(3) { left:50%; top:10%; animation-delay:2s; }
+    .bg-particles span:nth-child(4) { left:70%; top:50%; animation-delay:0.5s; width:3px; height:3px; }
+    .bg-particles span:nth-child(5) { left:85%; top:30%; animation-delay:3s; }
+    .bg-particles span:nth-child(6) { left:40%; top:80%; animation-delay:1.5s; width:5px; height:5px; }
+    .bg-particles span:nth-child(7) { left:15%; top:90%; animation-delay:2.5s; }
+    .bg-particles span:nth-child(8) { left:90%; top:70%; animation-delay:0.8s; }
+    .bg-particles span:nth-child(9) { left:60%; top:40%; animation-delay:3.5s; }
+    .bg-particles span:nth-child(10) { left:30%; top:30%; animation-delay:1.2s; }
+    .bg-grid {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(rgba(233,69,96,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(233,69,96,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       SCROLLBAR
+       ═══════════════════════════════════════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0a0a1a; }
+    ::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #e94560; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       HEADER / NAV
+       ═══════════════════════════════════════════════════════════════════════ */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(10,10,26,0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(42,42,74,0.3);
+      transition: transform 0.3s;
+    }
+    header .container { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-family: 'Orbitron', monospace; font-weight: 700; }
+    .logo-icon { width: 32px; height: 32px; animation: spin-slow 12s linear infinite; }
+    .logo-text { font-size: 1.2rem; letter-spacing: 2px; }
+    .logo-text span { color: #e94560; }
+    nav { display: flex; align-items: center; gap: 24px; }
+    nav a { color: #8888aa; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; position: relative; }
+    nav a:hover, nav a.active { color: white; }
+    nav a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px;
+      background: #e94560; transition: width 0.3s;
+    }
+    nav a:hover::after, nav a.active::after { width: 100%; }
+    .nav-cta {
+      padding: 8px 20px; background: #e94560; color: white !important; border-radius: 8px;
+      font-family: 'Orbitron', monospace; font-size: 0.75rem; letter-spacing: 1px;
+      transition: all 0.3s !important;
+    }
+    .nav-cta:hover { background: #d63850; box-shadow: 0 0 20px rgba(233,69,96,0.4) !important; }
+    .nav-cta::after { display: none !important; }
+    .mobile-menu-btn { display: none; background: none; border: none; color: white; cursor: pointer; padding: 8px; }
+    @media (max-width: 768px) {
+      .mobile-menu-btn { display: block; }
+      nav { display: none; position: absolute; top: 64px; left: 0; right: 0;
+            background: rgba(10,10,26,0.98); flex-direction: column; padding: 20px;
+            border-bottom: 1px solid #2a2a4a; gap: 16px; }
+      nav.open { display: flex; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       HERO
+       ═══════════════════════════════════════════════════════════════════════ */
+    .hero {
+      min-height: 100vh; display: flex; align-items: center; position: relative;
+      padding-top: 80px; overflow: hidden;
+    }
+    .hero-bg-glow {
+      position: absolute; width: 600px; height: 600px; border-radius: 50%;
+      top: -200px; right: -200px;
+      background: radial-gradient(circle, rgba(233,69,96,0.12), transparent 70%);
+      pointer-events: none;
+    }
+    .hero-bg-glow-2 {
+      position: absolute; width: 500px; height: 500px; border-radius: 50%;
+      bottom: -100px; left: -150px;
+      background: radial-gradient(circle, rgba(15,52,96,0.15), transparent 70%);
+      pointer-events: none;
+    }
+    .hero-content { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 20px;
+      background: rgba(233,69,96,0.1); border: 1px solid rgba(233,69,96,0.3);
+      font-size: 0.8rem; color: #e94560; margin-bottom: 20px;
+      font-family: 'Orbitron', monospace; letter-spacing: 1px;
+    }
+    .hero h1 { font-family: 'Orbitron', monospace; font-size: 3.5rem; font-weight: 900; line-height: 1.1; margin-bottom: 16px; }
+    .hero h1 .highlight { color: #e94560; text-shadow: 0 0 20px rgba(233,69,96,0.4); }
+    .hero p { font-size: 1.15rem; color: #8888aa; margin-bottom: 32px; max-width: 520px; }
+    .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 28px; border-radius: 12px;
+      font-family: 'Orbitron', monospace; font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 1px; cursor: pointer; transition: all 0.3s; border: none;
+    }
+    .btn-primary {
+      background: #e94560; color: white;
+      box-shadow: 0 4px 20px rgba(233,69,96,0.3);
+    }
+    .btn-primary:hover { background: #d63850; box-shadow: 0 6px 30px rgba(233,69,96,0.5); transform: translateY(-2px); }
+    .btn-secondary {
+      background: transparent; color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .btn-secondary:hover { border-color: #e94560; background: rgba(233,69,96,0.05); transform: translateY(-2px); }
+    .btn-github {
+      background: #1a1a2e; color: white;
+      border: 1px solid #2a2a4a;
+    }
+    .btn-github:hover { border-color: #e94560; transform: translateY(-2px); }
+    .hero-stats {
+      display: flex; gap: 40px; margin-top: 40px;
+    }
+    .hero-stat h3 { font-family: 'Orbitron', monospace; font-size: 2rem; color: #e94560; }
+    .hero-stat p { font-size: 0.85rem; color: #8888aa; margin-bottom: 0; }
+    .hero-visual {
+      position: relative; display: flex; justify-content: center; align-items: center;
+    }
+    .hero-hex {
+      width: 320px; height: 320px; position: relative;
+    }
+    .hero-hex svg { width: 100%; height: 100%; animation: float 5s ease-in-out infinite; }
+    .hero-hex-ring {
+      position: absolute; inset: -20px; border: 1px solid rgba(233,69,96,0.1);
+      border-radius: 50%; animation: spin-slow 20s linear infinite;
+    }
+    .hero-hex-ring-2 {
+      position: absolute; inset: -40px; border: 1px dashed rgba(233,69,96,0.05);
+      border-radius: 50%; animation: spin-slow 30s linear infinite reverse;
+    }
+    .hero-code-preview {
+      position: absolute; bottom: -20px; right: -20px;
+      background: rgba(18,18,42,0.9); backdrop-filter: blur(8px);
+      border: 1px solid #2a2a4a; border-radius: 12px; padding: 16px 20px;
+      font-size: 0.8rem; font-family: 'Courier New', monospace;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      animation: fadeInUp 1s ease 1s forwards; opacity: 0;
+    }
+    .hero-code-preview .cmd { color: #00ff88; }
+    .hero-code-preview .comment { color: #8888aa; }
+    @media (max-width: 768px) {
+      .hero-content { grid-template-columns: 1fr; text-align: center; gap: 40px; }
+      .hero h1 { font-size: 2.2rem; }
+      .hero p { margin-left: auto; margin-right: auto; }
+      .hero-buttons { justify-content: center; }
+      .hero-stats { justify-content: center; }
+      .hero-visual { display: none; }
+      .hero-code-preview { display: none; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       FEATURES
+       ═══════════════════════════════════════════════════════════════════════ */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    }
+    .feature-card {
+      padding: 32px 24px; border-radius: 16px;
+      background: rgba(18,18,42,0.4);
+      border: 1px solid rgba(42,42,74,0.3);
+      transition: all 0.4s; cursor: default;
+      position: relative; overflow: hidden;
+    }
+    .feature-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, #e94560, transparent);
+      transform: translateX(-100%); transition: transform 0.6s;
+    }
+    .feature-card:hover { transform: translateY(-8px); border-color: rgba(233,69,96,0.3); box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .feature-card:hover::before { transform: translateX(100%); }
+    .feature-icon { font-size: 2.5rem; margin-bottom: 16px; }
+    .feature-card h3 { font-family: 'Orbitron', monospace; font-size: 0.9rem; letter-spacing: 1px; margin-bottom: 8px; }
+    .feature-card p { color: #8888aa; font-size: 0.9rem; line-height: 1.5; }
+    @media (max-width: 768px) { .features-grid { grid-template-columns: 1fr; } }
+    @media (min-width: 769px) and (max-width: 1024px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       INSTALLATION
+       ═══════════════════════════════════════════════════════════════════════ */
+    .install-tabs {
+      display: flex; gap: 4px; background: rgba(18,18,42,0.5);
+      padding: 4px; border-radius: 12px; margin-bottom: 32px;
+      max-width: 500px; margin-left: auto; margin-right: auto;
+    }
+    .install-tab {
+      flex: 1; padding: 12px 16px; border: none; background: transparent;
+      color: #8888aa; font-family: 'Orbitron', monospace; font-size: 0.75rem;
+      letter-spacing: 1px; cursor: pointer; border-radius: 8px;
+      transition: all 0.3s; text-align: center;
+    }
+    .install-tab.active { background: #e94560; color: white; box-shadow: 0 4px 15px rgba(233,69,96,0.3); }
+    .install-tab:hover:not(.active) { color: white; }
+    .install-panel { display: none; }
+    .install-panel.active { display: block; animation: slideIn 0.4s ease; }
+    .install-card {
+      background: rgba(18,18,42,0.5); border: 1px solid #2a2a4a;
+      border-radius: 16px; padding: 32px; max-width: 700px; margin: 0 auto;
+    }
+    .install-card h3 { font-family: 'Orbitron', monospace; font-size: 1rem; letter-spacing: 1px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .install-card h3 .step-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #e94560; color: white; font-size: 0.8rem;
+    }
+    .install-card p, .install-card li { color: #8888aa; font-size: 0.95rem; }
+    .install-card ul { list-style: none; padding: 0; }
+    .install-card ul li { padding: 6px 0; padding-left: 24px; position: relative; }
+    .install-card ul li::before { content: '›'; position: absolute; left: 8px; color: #e94560; font-weight: bold; }
+    .code-block {
+      background: #060612; border: 1px solid #2a2a4a; border-radius: 10px;
+      padding: 16px 20px; margin: 12px 0; position: relative;
+      overflow-x: auto;
+    }
+    .code-block code { color: #e0e0ff; font-size: 0.85rem; line-height: 1.7; }
+    .code-block .comment { color: #666688; }
+    .code-block .keyword { color: #e94560; }
+    .code-block .string { color: #00ff88; }
+    .code-block .var { color: #0f3460; }
+    .copy-btn {
+      position: absolute; top: 8px; right: 8px;
+      background: rgba(42,42,74,0.5); border: 1px solid #2a2a4a;
+      color: #8888aa; padding: 6px 12px; border-radius: 6px;
+      font-size: 0.7rem; cursor: pointer; transition: all 0.3s;
+      font-family: 'Rajdhani', sans-serif;
+    }
+    .copy-btn:hover { background: rgba(233,69,96,0.2); border-color: #e94560; color: white; }
+    .copy-btn.copied { background: #00ff88; color: #0a0a1a; border-color: #00ff88; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       TECH STACK
+       ═══════════════════════════════════════════════════════════════════════ */
+    .stack-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 20px; max-width: 900px; margin: 0 auto;
+    }
+    .stack-item {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      padding: 24px 16px; border-radius: 12px;
+      background: rgba(18,18,42,0.3); border: 1px solid #2a2a4a;
+      transition: all 0.3s; cursor: default;
+    }
+    .stack-item:hover { border-color: #e94560; transform: translateY(-4px); }
+    .stack-item .icon { font-size: 2rem; }
+    .stack-item .name { font-family: 'Orbitron', monospace; font-size: 0.7rem; letter-spacing: 1px; color: white; text-align: center; }
+    .stack-item .desc { color: #8888aa; font-size: 0.75rem; text-align: center; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       API DOC
+       ═══════════════════════════════════════════════════════════════════════ */
+    .api-table {
+      width: 100%; border-collapse: collapse; font-size: 0.9rem;
+      background: rgba(18,18,42,0.3); border-radius: 12px; overflow: hidden;
+    }
+    .api-table th, .api-table td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #2a2a4a; }
+    .api-table th { font-family: 'Orbitron', monospace; font-size: 0.7rem; letter-spacing: 1px; color: #8888aa; text-transform: uppercase; background: rgba(10,10,26,0.5); }
+    .api-table tr:hover td { background: rgba(233,69,96,0.03); }
+    .api-table .method {
+      display: inline-block; padding: 2px 10px; border-radius: 4px;
+      font-family: 'Orbitron', monospace; font-size: 0.7rem; font-weight: 600;
+    }
+    .method-get { background: rgba(0,255,136,0.15); color: #00ff88; }
+    .method-post { background: rgba(233,69,96,0.15); color: #e94560; }
+    .api-table .path { font-family: 'Courier New', monospace; color: #e0e0ff; font-size: 0.85rem; }
+    .api-table .desc { color: #8888aa; }
+
+    @media (max-width: 768px) {
+      .api-table { font-size: 0.75rem; }
+      .api-table th, .api-table td { padding: 10px 8px; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       API TESTER
+       ═══════════════════════════════════════════════════════════════════════ */
+    .api-tester {
+      max-width: 700px; margin: 0 auto;
+      background: rgba(18,18,42,0.5); border: 1px solid #2a2a4a;
+      border-radius: 16px; padding: 32px;
+    }
+    .tester-input-group { display: flex; gap: 12px; margin-bottom: 16px; }
+    .tester-input-group input {
+      flex: 1; padding: 12px 16px; background: #060612;
+      border: 1px solid #2a2a4a; border-radius: 10px;
+      color: white; font-family: 'Rajdhani', sans-serif; font-size: 1rem;
+      outline: none; transition: border-color 0.3s;
+    }
+    .tester-input-group input:focus { border-color: #e94560; }
+    .tester-input-group button {
+      padding: 12px 24px; background: #e94560; color: white; border: none;
+      border-radius: 10px; cursor: pointer; font-family: 'Orbitron', monospace;
+      font-size: 0.75rem; letter-spacing: 1px; transition: all 0.3s;
+      white-space: nowrap;
+    }
+    .tester-input-group button:hover { background: #d63850; }
+    .tester-input-group button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .tester-result {
+      background: #060612; border: 1px solid #2a2a4a;
+      border-radius: 10px; padding: 16px 20px; margin-top: 12px;
+      font-family: 'Courier New', monospace; font-size: 0.8rem;
+      max-height: 300px; overflow: auto; display: none;
+    }
+    .tester-result.show { display: block; }
+    .tester-result .json-key { color: #e94560; }
+    .tester-result .json-string { color: #00ff88; }
+    .tester-result .json-number { color: #0f3460; }
+    .tester-result .json-bool { color: #ffaa00; }
+    .tester-status {
+      display: inline-block; padding: 2px 10px; border-radius: 4px;
+      font-size: 0.7rem; font-family: 'Orbitron', monospace; margin-bottom: 12px;
+    }
+    .tester-loading { text-align: center; padding: 20px; color: #8888aa; }
+    .tester-loading .spinner {
+      display: inline-block; width: 24px; height: 24px;
+      border: 2px solid #2a2a4a; border-top-color: #e94560;
+      border-radius: 50%; animation: spin-slow 0.8s linear infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       USAGE
+       ═══════════════════════════════════════════════════════════════════════ */
+    .usage-steps {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+      max-width: 900px; margin: 0 auto;
+    }
+    .usage-step {
+      text-align: center; padding: 32px 20px;
+      background: rgba(18,18,42,0.3); border: 1px solid #2a2a4a;
+      border-radius: 16px; transition: all 0.3s;
+    }
+    .usage-step:hover { border-color: rgba(233,69,96,0.3); transform: translateY(-4px); }
+    .usage-step .num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 48px; height: 48px; border-radius: 50%;
+      background: linear-gradient(135deg, #e94560, #0f3460);
+      font-family: 'Orbitron', monospace; font-size: 1.2rem; font-weight: 700;
+      color: white; margin-bottom: 16px;
+    }
+    .usage-step h3 { font-family: 'Orbitron', monospace; font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 8px; }
+    .usage-step p { color: #8888aa; font-size: 0.85rem; }
+    @media (max-width: 768px) { .usage-steps { grid-template-columns: 1fr; } }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       CTAs
+       ═══════════════════════════════════════════════════════════════════════ */
+    .cta-section {
+      text-align: center; padding: 80px 0;
+    }
+    .cta-section h2 { font-family: 'Orbitron', monospace; font-size: 2rem; margin-bottom: 16px; }
+    .cta-section p { color: #8888aa; margin-bottom: 32px; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .cta-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════════════════════════════ */
+    footer {
+      border-top: 1px solid #2a2a4a; padding: 40px 0;
+      text-align: center;
+    }
+    footer p { color: #666688; font-size: 0.85rem; }
+    footer .links { display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap; }
+    footer .links a { font-size: 0.8rem; }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .section { padding: 48px 0; }
+      .section-title { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ PARTICLES ═══ -->
+<div class="bg-particles">
+  <span></span><span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span><span></span>
+</div>
+<div class="bg-grid"></div>
+
+<!-- ═══ HEADER ═══ -->
+<header id="header">
+  <div class="container">
+    <a href="#" class="logo">
+      <svg class="logo-icon" viewBox="0 0 64 64" fill="none">
+        <polygon points="32,4 56,18 56,46 32,60 8,46 8,18" stroke="#e94560" stroke-width="2.5" fill="none"/>
+        <polygon points="32,12 48,21 48,43 32,52 16,43 16,21" stroke="#0f3460" stroke-width="1.5" fill="none"/>
+        <circle cx="32" cy="32" r="6" fill="#e94560" opacity="0.8"/>
+        <circle cx="32" cy="32" r="2" fill="#fff"/>
+      </svg>
+      <span class="logo-text"><span>NEXUS</span> CONVERTER</span>
+    </a>
+    <button class="mobile-menu-btn" onclick="document.querySelector('nav').classList.toggle('open')" aria-label="Menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <nav>
+      <a href="#features">Fonctionnalités</a>
+      <a href="#install">Installation</a>
+      <a href="#usage">Utilisation</a>
+      <a href="#api">API</a>
+      <a href="#demo">Live Demo</a>
+      <a href="https://github.com/HiTechTN/nexus-converter" target="_blank" class="nav-cta">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="hero">
+  <div class="hero-bg-glow"></div>
+  <div class="hero-bg-glow-2"></div>
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-text fade-in-up">
+        <div class="hero-badge">
+          <span>⚡</span> v1.0.0 — Open Source
+        </div>
+        <h1>
+          Convertissez<br/>
+          <span class="highlight">vos médias</span><br/>
+          en un clic
+        </h1>
+        <p>
+          Téléchargez et convertissez vos vidéos et musiques depuis 
+          <strong>1000+ sites</strong> (YouTube, TikTok, Instagram, Twitch…)
+          avec une interface gaming moderne.
+        </p>
+        <div class="hero-buttons">
+          <a href="#install" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Installer
+          </a>
+          <a href="#demo" class="btn btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Tester l'API
+          </a>
+          <a href="https://github.com/HiTechTN/nexus-converter" target="_blank" class="btn btn-github">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+            </svg>
+            GitHub
+          </a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><h3>1000+</h3><p>Sites supportés</p></div>
+          <div class="hero-stat"><h3>4</h3><p>Formats (MP4/MKV/MP3/WAV)</p></div>
+          <div class="hero-stat"><h3>⚡</h3><p>Temps réel (SSE)</p></div>
+        </div>
+      </div>
+      <div class="hero-visual fade-in-up">
+        <div class="hero-hex">
+          <div class="hero-hex-ring"></div>
+          <div class="hero-hex-ring-2"></div>
+          <svg viewBox="0 0 320 320" fill="none">
+            <defs>
+              <linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#e94560"/>
+                <stop offset="100%" stop-color="#0f3460"/>
+              </linearGradient>
+            </defs>
+            <polygon points="160,20 280,70 280,250 160,300 40,250 40,70"
+              stroke="url(#hexGrad)" stroke-width="3" fill="rgba(233,69,96,0.03)"/>
+            <polygon points="160,55 245,90 245,230 160,265 75,230 75,90"
+              stroke="#0f3460" stroke-width="2" fill="rgba(15,52,96,0.05)"/>
+            <polygon points="160,90 210,110 210,210 160,230 110,210 110,110"
+              stroke="#e94560" stroke-width="1.5" fill="rgba(233,69,96,0.08)"/>
+            <circle cx="160" cy="160" r="30" stroke="#e94560" stroke-width="2" fill="rgba(233,69,96,0.1)"/>
+            <circle cx="160" cy="160" r="10" fill="#e94560"/>
+            <text x="160" y="168" font-family="Orbitron,monospace" font-size="36"
+              font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="central">N</text>
+          </svg>
+        </div>
+        <div class="hero-code-preview">
+          <span class="comment"># Une commande suffit</span><br/>
+          <span class="cmd">$</span> ./install.sh<br/>
+          <span class="cmd">$</span> ./start.sh<br/>
+          <span style="color:#e94560;">╰─></span> <span style="color:#00ff88;">http://localhost:5173</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FEATURES ═══ -->
+<section class="section" id="features" style="padding-top:40px;">
+  <div class="container">
+    <h2 class="section-title">Fonctionnalités <span>clés</span></h2>
+    <div class="section-divider"></div>
+    <p class="section-subtitle">Tout ce dont vous avez besoin pour télécharger et convertir vos médias</p>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon">🌐</div><h3>1000+ Sites</h3><p>YouTube, TikTok, Instagram, Twitter/X, Twitch, Vimeo, Reddit et des milliers d'autres.</p></div>
+      <div class="feature-card"><div class="feature-icon">📁</div><h3>Drag &amp; Drop</h3><p>Upload de fichiers locaux directement depuis votre navigateur avec glisser-déposer.</p></div>
+      <div class="feature-card"><div class="feature-icon">🎬</div><h3>4 Formats</h3><p>MP4, MKV, MP3, WAV — choisissez la qualité de 480p à 4K ou la meilleure disponible.</p></div>
+      <div class="feature-card"><div class="feature-icon">⚡</div><h3>Temps réel</h3><p>Progression en direct via Server-Sent Events (SSE) avec vitesse et ETA.</p></div>
+      <div class="feature-card"><div class="feature-icon">🎮</div><h3>Design Gaming</h3><p>Interface sombre "Red Magic" avec animations Framer Motion et effets de glow.</p></div>
+      <div class="feature-card"><div class="feature-icon">🧹</div><h3>Auto-nettoyage</h3><p>Nettoyage automatique des fichiers temporaires après téléchargement.</p></div>
+      <div class="feature-card"><div class="feature-icon">📱</div><h3>PWA Mobile</h3><p>Application web progressive installable sur mobile comme une app native.</p></div>
+      <div class="feature-card"><div class="feature-icon">🎵</div><h3>Lecteur Intégré</h3><p>Lecteur universel vidéo/audio avec contrôles custom et plein écran.</p></div>
+      <div class="feature-card"><div class="feature-icon">🐳</div><h3>Docker Ready</h3><p>Déploiement en un clic avec Docker Compose et reverse proxy Nginx.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ INSTALLATION ═══ -->
+<section class="section" id="install">
+  <div class="container">
+    <h2 class="section-title">Installation <span>rapide</span></h2>
+    <div class="section-divider"></div>
+    <p class="section-subtitle">3 méthodes au choix. Choisissez celle qui vous convient.</p>
+
+    <div class="install-tabs">
+      <button class="install-tab active" data-tab="auto">⚡ Auto</button>
+      <button class="install-tab" data-tab="docker">🐳 Docker</button>
+      <button class="install-tab" data-tab="manual">⚙️ Manuel</button>
+    </div>
+
+    <!-- Auto -->
+    <div class="install-panel active" id="panel-auto">
+      <div class="install-card">
+        <h3><span class="step-num">1</span> Cloner le dépôt</h3>
+        <div class="code-block">
+          <code>
+            <span class="comment"># Via HTTPS</span><br/>
+            git clone https://github.com/HiTechTN/nexus-converter.git<br/>
+            cd nexus-converter
+          </code>
+          <button class="copy-btn" data-cmd="git clone https://github.com/HiTechTN/nexus-converter.git && cd nexus-converter">Copier</button>
+        </div>
+
+        <h3><span class="step-num">2</span> Lancer l'installateur automatique</h3>
+        <p>Le script détecte votre OS (Linux/macOS/Windows), installe Node.js, pnpm, FFmpeg, Python, yt-dlp et configure les ports automatiquement.</p>
+        <div class="code-block">
+          <code>
+            ./install.sh
+          </code>
+          <button class="copy-btn" data-cmd="./install.sh">Copier</button>
+        </div>
+
+        <h3><span class="step-num">3</span> Démarrer l'application</h3>
+        <div class="code-block">
+          <code>
+            ./start.sh
+          </code>
+          <button class="copy-btn" data-cmd="./start.sh">Copier</button>
+        </div>
+
+        <p style="margin-top:16px;">✨ L'application sera accessible sur <strong style="color:#e94560;">http://localhost:5173</strong></p>
+      </div>
+    </div>
+
+    <!-- Docker -->
+    <div class="install-panel" id="panel-docker">
+      <div class="install-card">
+        <h3><span class="step-num">1</span> Cloner le dépôt</h3>
+        <div class="code-block">
+          <code>
+            git clone https://github.com/HiTechTN/nexus-converter.git<br/>
+            cd nexus-converter
+          </code>
+          <button class="copy-btn" data-cmd="git clone https://github.com/HiTechTN/nexus-converter.git && cd nexus-converter">Copier</button>
+        </div>
+
+        <h3><span class="step-num">2</span> Lancer avec Docker Compose</h3>
+        <p>Le Dockerfile multi-stage contient tout le nécessaire (Node.js, FFmpeg, yt-dlp).</p>
+        <div class="code-block">
+          <code>
+            <span class="comment"># Construire et lancer</span><br/>
+            docker compose up --build<br/><br/>
+            <span class="comment"># Ou en arrière-plan</span><br/>
+            docker compose up --build -d
+          </code>
+          <button class="copy-btn" data-cmd="docker compose up --build">Copier</button>
+        </div>
+
+        <h3><span class="step-num">3</span> Accéder à l'application</h3>
+        <p style="margin-top:8px;">🌐 <strong style="color:#e94560;">http://localhost</strong> (port 80)</p>
+        <p style="color:#8888aa;font-size:0.85rem;">Le reverse proxy Nginx sert le frontend et proxy l'API.</p>
+      </div>
+    </div>
+
+    <!-- Manual -->
+    <div class="install-panel" id="panel-manual">
+      <div class="install-card">
+        <h3><span class="step-num">1</span> Prérequis système</h3>
+        <ul>
+          <li><strong>Node.js</strong> ≥ 18 — <a href="https://nodejs.org" target="_blank">nodejs.org</a></li>
+          <li><strong>pnpm</strong> ≥ 8 — <code>npm install -g pnpm</code></li>
+          <li><strong>FFmpeg</strong> — <a href="https://ffmpeg.org/download.html" target="_blank">ffmpeg.org</a></li>
+          <li><strong>yt-dlp</strong> — <code>pip install yt-dlp</code></li>
+          <li><strong>Python 3</strong> ≥ 3.8 — <a href="https://python.org" target="_blank">python.org</a></li>
+        </ul>
+
+        <h3 style="margin-top:24px;"><span class="step-num">2</span> Installer les dépendances</h3>
+        <div class="code-block">
+          <code>
+            git clone https://github.com/HiTechTN/nexus-converter.git<br/>
+            cd nexus-converter<br/>
+            pnpm install
+          </code>
+          <button class="copy-btn" data-cmd="git clone https://github.com/HiTechTN/nexus-converter.git && cd nexus-converter && pnpm install">Copier</button>
+        </div>
+
+        <h3><span class="step-num">3</span> Builder les libs partagées</h3>
+        <div class="code-block">
+          <code>
+            pnpm --filter @workspace/api-zod run build<br/>
+            pnpm --filter @workspace/api-client-react run build
+          </code>
+          <button class="copy-btn" data-cmd="pnpm --filter @workspace/api-zod run build && pnpm --filter @workspace/api-client-react run build">Copier</button>
+        </div>
+
+        <h3><span class="step-num">4</span> Lancer (deux terminaux)</h3>
+        <div class="code-block">
+          <code>
+            <span class="comment"># Terminal 1 — API Server</span><br/>
+            PORT=3000 pnpm --filter @workspace/api-server run dev<br/><br/>
+            <span class="comment"># Terminal 2 — Frontend</span><br/>
+            PORT=5173 pnpm --filter @workspace/media-converter run dev
+          </code>
+          <button class="copy-btn" data-cmd="PORT=3000 pnpm --filter @workspace/api-server run dev">Copier API</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ USAGE ═══ -->
+<section class="section" id="usage">
+  <div class="container">
+    <h2 class="section-title">Comment <span>l'utiliser</span></h2>
+    <div class="section-divider"></div>
+    <p class="section-subtitle">3 étapes simples pour convertir vos médias</p>
+    <div class="usage-steps">
+      <div class="usage-step">
+        <div class="num">1</div>
+        <h3>Collez une URL</h3>
+        <p>Copiez le lien d'une vidéo YouTube, TikTok, Instagram, Twitter/X, Twitch ou de 1000+ autres sites.</p>
+      </div>
+      <div class="usage-step">
+        <div class="num">2</div>
+        <h3>Choisissez le format</h3>
+        <p>Sélectionnez MP4, MKV, MP3 ou WAV et la qualité souhaitée (480p → 4K → Best).</p>
+      </div>
+      <div class="usage-step">
+        <div class="num">3</div>
+        <h3>Téléchargez ou lisez</h3>
+        <p>Regardez la progression en temps réel, puis lisez directement dans le lecteur intégré ou téléchargez.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:48px;">
+      <a href="https://github.com/HiTechTN/nexus-converter" target="_blank" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Installer maintenant
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TECH STACK ═══ -->
+<section class="section" style="background:rgba(18,18,42,0.2);">
+  <div class="container">
+    <h2 class="section-title">Stack <span>technique</span></h2>
+    <div class="section-divider"></div>
+    <p class="section-subtitle">Une architecture moderne et robuste</p>
+    <div class="stack-grid">
+      <div class="stack-item"><div class="icon">⚛️</div><div class="name">React 18</div><div class="desc">UI Components</div></div>
+      <div class="stack-item"><div class="icon">⚡</div><div class="name">Vite 5</div><div class="desc">Build tool</div></div>
+      <div class="stack-item"><div class="icon">🎨</div><div class="name">Tailwind 4</div><div class="desc">CSS Utility</div></div>
+      <div class="stack-item"><div class="icon">🔄</div><div class="name">Framer Motion</div><div class="desc">Animations</div></div>
+      <div class="stack-item"><div class="icon">🖥️</div><div class="name">Express 5</div><div class="desc">API Backend</div></div>
+      <div class="stack-item"><div class="icon">📘</div><div class="name">TypeScript</div><div class="desc">Typage strict</div></div>
+      <div class="stack-item"><div class="icon">📦</div><div class="name">pnpm</div><div class="desc">Monorepo</div></div>
+      <div class="stack-item"><div class="icon">📋</div><div class="name">OpenAPI 3.1</div><div class="desc">API Contract</div></div>
+      <div class="stack-item"><div class="icon">🔍</div><div class="name">Zod</div><div class="desc">Validation</div></div>
+      <div class="stack-item"><div class="icon">🔄</div><div class="name">React Query</div><div class="desc">Data fetching</div></div>
+      <div class="stack-item"><div class="icon">🎬</div><div class="name">yt-dlp</div><div class="desc">Media download</div></div>
+      <div class="stack-item"><div class="icon">🎞️</div><div class="name">FFmpeg</div><div class="desc">Conversion</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ API ═══ -->
+<section class="section" id="api">
+  <div class="container">
+    <h2 class="section-title">API <span>Endpoints</span></h2>
+    <div class="section-divider"></div>
+    <p class="section-subtitle">Contrat OpenAPI 3.1 — Tous les endpoints de l'API REST</p>
+    <div style="overflow-x:auto;">
+      <table class="api-table">
+        <thead>
+          <tr><th>Méthode</th><th>Route</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="method method-get">GET</span></td>
+            <td class="path">/api/healthz</td>
+            <td class="desc">Health check (yt-dlp, FFmpeg, dossier tmp)</td>
+          </tr>
+          <tr>
+            <td><span class="method method-post">POST</span></td>
+            <td class="path">/api/media/info</td>
+            <td class="desc">Récupérer les métadonnées d'une URL (titre, durée, formats disponibles)</td>
+          </tr>
+          <tr>
+            <td><span class="method method-post">POST</span></td>
+            <td class="path">/api/media/convert</td>
+            <td class="desc">Démarrer une conversion à partir d'une URL</td>
+          </tr>
+          <tr>
+            <td><span class="method method-get">GET</span></td>
+            <td class="path">/api/media/progress/:jobId</td>
+            <td class="desc">Flux SSE de progression en temps réel</td>
+          </tr>
+          <tr>
+            <td><span class="method method-get">GET</span></td>
+            <td class="path">/api/media/download/:jobId</td>
+            <td class="desc">Télécharger le fichier converti</td>
+          </tr>
+          <tr>
+            <td><span class="method method-post">POST</span></td>
+            <td class="path">/api/media/upload</td>
+            <td class="desc">Uploader un fichier local pour conversion</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="text-align:center;margin-top:24px;">
+      <a href="lib/api-spec/openapi.yaml" target="_blank" class="btn btn-secondary" style="font-size:0.75rem;">
+        📄 Voir la spec OpenAPI complète
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ API TESTER ═══ -->
+<section class="section" id="demo" style="background:rgba(18,18,42,0.2);">
+  <div class="container">
+    <h2 class="section-title">Live <span>Demo</span></h2>
+    <div class="section-divider"></div>
+    <p class="section-subtitle">Testez l'API en direct — Entrez une URL YouTube pour voir les métadonnées</p>
+    <div class="api-tester">
+      <div class="tester-input-group">
+        <input type="url" id="tester-url" placeholder="https://www.youtube.com/watch?v=..." />
+        <button id="tester-btn" onclick="testAPI()">Tester</button>
+      </div>
+      <div id="tester-status"></div>
+      <div id="tester-loading" class="tester-loading" style="display:none;">
+        <div class="spinner"></div>
+        <p style="margin-top:8px;">Analyse en cours...</p>
+      </div>
+      <pre id="tester-result" class="tester-result"></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section">
+  <div class="container">
+    <h2>Prêt à <span style="color:#e94560;">convertir</span> ?</h2>
+    <p>Clonez le dépôt, lancez l'installation et commencez à convertir vos médias en quelques secondes.</p>
+    <div class="cta-buttons">
+      <a href="https://github.com/HiTechTN/nexus-converter" target="_blank" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+        </svg>
+        Voir sur GitHub
+      </a>
+      <a href="#install" class="btn btn-secondary">Guide d'installation</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="container">
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;">
+      <svg width="24" height="24" viewBox="0 0 64 64" fill="none">
+        <polygon points="32,8 56,22 56,42 32,56 8,42 8,22" stroke="#e94560" stroke-width="2" fill="none"/>
+        <circle cx="32" cy="32" r="4" fill="#e94560"/>
+      </svg>
+      <span style="font-family:'Orbitron',monospace;font-weight:700;letter-spacing:2px;">
+        <span style="color:#e94560;">NEXUS</span> CONVERTER
+      </span>
+    </div>
+    <p>&copy; 2026 — Open Source (MIT) — Propulsé par yt-dlp &amp; FFmpeg</p>
+    <div class="links">
+      <a href="https://github.com/HiTechTN/nexus-converter">GitHub</a>
+      <a href="https://github.com/HiTechTN/nexus-converter/issues">Signaler un bug</a>
+      <a href="https://github.com/HiTechTN/nexus-converter/blob/main/README.md">Documentation</a>
+      <a href="#hero">Haut de page ↑</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+  // ─── Installation Tabs ──────────────────────────────────────────────────
+  document.querySelectorAll('.install-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.install-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.install-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('open');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ─── Copy Button ────────────────────────────────────────────────────────
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const text = btn.dataset.cmd;
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = '✓ Copié !';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copier';
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch {
+        // Fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        btn.textContent = '✓ Copié !';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copier';
+          btn.classList.remove('copied');
+        }, 2000);
+      }
+    });
+  });
+
+  // ─── Nav active state ───────────────────────────────────────────────────
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('nav a:not(.nav-cta)');
+
+  function updateActiveNav() {
+    let current = '';
+    sections.forEach(section => {
+      const top = section.offsetTop - 120;
+      if (window.scrollY >= top) current = section.id;
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+  }
+  window.addEventListener('scroll', updateActiveNav);
+
+  // ─── Smooth scroll for nav ──────────────────────────────────────────────
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Close mobile nav
+        document.querySelector('nav').classList.remove('open');
+      }
+    });
+  });
+
+  // ─── API Tester ─────────────────────────────────────────────────────────
+  async function testAPI() {
+    const urlInput = document.getElementById('tester-url');
+    const btn = document.getElementById('tester-btn');
+    const loading = document.getElementById('tester-loading');
+    const result = document.getElementById('tester-result');
+    const status = document.getElementById('tester-status');
+
+    const url = urlInput.value.trim();
+    if (!url) {
+      status.innerHTML = '<span class="tester-status" style="background:rgba(233,69,96,0.15);color:#e94560;">⚠️ Entrez une URL</span>';
+      return;
+    }
+
+    btn.disabled = true;
+    loading.style.display = 'block';
+    result.classList.remove('show');
+    result.textContent = '';
+    status.innerHTML = '';
+
+    // Essayer l'API locale (port par défaut 3000, puis 80, puis l'origine)
+    const origins = [
+      window.location.origin.replace(/:\d+$/, '') + ':3000',
+      window.location.origin,
+      'http://localhost:3000',
+    ];
+
+    let lastError = null;
+
+    for (const baseUrl of origins) {
+      try {
+        const response = await fetch(baseUrl + '/api/media/info', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+          signal: AbortSignal.timeout(5000),
+        });
+
+        loading.style.display = 'none';
+
+        if (response.ok) {
+          const data = await response.json();
+          status.innerHTML = '<span class="tester-status" style="background:rgba(0,255,136,0.15);color:#00ff88;">✓ Succès — API sur ' + baseUrl + '</span>';
+          result.textContent = JSON.stringify(data, null, 2);
+          result.classList.add('show');
+          btn.disabled = false;
+          return;
+        } else {
+          const err = await response.json().catch(() => ({ error: 'Erreur ' + response.status }));
+          status.innerHTML = '<span class="tester-status" style="background:rgba(233,69,96,0.15);color:#e94560;">✗ Erreur</span>';
+          result.textContent = JSON.stringify(err, null, 2);
+          result.classList.add('show');
+          btn.disabled = false;
+          return;
+        }
+      } catch (e) {
+        lastError = e;
+        continue;
+      }
+    }
+
+    // Aucune API joignable
+    loading.style.display = 'none';
+    status.innerHTML = '<span class="tester-status" style="background:rgba(233,69,96,0.15);color:#e94560;">⚠️ API non joignable</span>';
+    result.innerHTML = `<span style="color:#8888aa;">L'API NEXUS CONVERTER n'est pas accessible depuis cette page.</span>\n\n` +
+      `Pour tester l'API en direct :\n` +
+      `1. Installez l'application : ./install.sh\n` +
+      `2. Démarrez-la : ./start.sh\n` +
+      `3. Revenez tester avec l'API sur http://localhost:3000\n\n` +
+      `Ou utilisez curl depuis un terminal :\n` +
+      `curl -X POST http://localhost:3000/api/media/info \\\n` +
+      `  -H "Content-Type: application/json" \\\n` +
+      `  -d '{"url": "${url}"}'`;
+    result.classList.add('show');
+    btn.disabled = false;
+  }
+
+  // ─── Intersection Observer for animations ────────────────────────────────
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.feature-card, .usage-step, .stack-item').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+  });
+
+  // ─── Header hide/show on scroll ─────────────────────────────────────────
+  let lastScroll = 0;
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    const header = document.getElementById('header');
+    if (currentScroll > lastScroll && currentScroll > 100) {
+      header.style.transform = 'translateY(-100%)';
+    } else {
+      header.style.transform = 'translateY(0)';
+    }
+    lastScroll = currentScroll;
+  });
+
+  console.log('🚀 NEXUS CONVERTER — Landing Page');
+  console.log('📦 https://github.com/HiTechTN/nexus-converter');
+</script>
+</body>
+</html>
