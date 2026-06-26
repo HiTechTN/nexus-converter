@@ -551,11 +551,11 @@
           avec une interface gaming moderne.
         </p>
         <div class="hero-buttons">
-          <a href="#install" class="btn btn-primary">
+          <a href="#install" class="btn btn-primary" onclick="event.preventDefault();navigator.clipboard.writeText('curl -fsSL https://github.com/HiTechTN/nexus-converter/releases/latest/download/install.sh | bash').then(()=>{const b=this;const t=b.textContent;b.textContent='✓ Copié !';setTimeout(()=>b.textContent=t,2000)})">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            Installer
+            Copier la commande
           </a>
           <a href="#demo" class="btn btn-secondary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -601,9 +601,8 @@
         </div>
         <div class="hero-code-preview">
           <span class="comment"># Une commande suffit</span><br/>
-          <span class="cmd">$</span> ./install.sh<br/>
-          <span class="cmd">$</span> ./start.sh<br/>
-          <span style="color:#e94560;">╰─></span> <span style="color:#00ff88;">http://localhost:5173</span>
+          <span class="cmd">$</span> <span style="color:#00ff88;">curl -fsSL https://github.com/HiTechTN/nexus-converter/releases/latest/download/install.sh | bash</span><br/>
+          <span style="color:#e94560;">╰─></span> <span style="color:#00ff88;">http://localhost:3000</span>
         </div>
       </div>
     </div>
