@@ -21,13 +21,13 @@ if [[ "$0" == "bash" || "$0" == "sh" || ! -f "$0" ]]; then
   echo ""
 
   INSTALL_DIR="${HOME}/nexus-converter"
-  VERSION="1.0.0"
+  VERSION="1.1.0"
 
   echo "[i] Création du dossier ${INSTALL_DIR}..."
   mkdir -p "$INSTALL_DIR"
 
-  echo "[i] Téléchargement de la release v${VERSION}..."
-  curl -fsSL "https://github.com/HiTechTN/nexus-converter/releases/download/v${VERSION}/nexus-converter-v${VERSION}.tar.gz" \
+  echo "[i] Téléchargement du code source v${VERSION}..."
+  curl -fsSL "https://github.com/HiTechTN/nexus-converter/archive/refs/tags/v${VERSION}.tar.gz" \
     | tar xz --strip-components=1 -C "$INSTALL_DIR"
 
   echo "[✓] Code téléchargé dans ${INSTALL_DIR}"

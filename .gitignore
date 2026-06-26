@@ -21,6 +21,13 @@ tmp/
 .DS_Store
 Thumbs.db
 
+# Build artifacts
+*.tsbuildinfo
+
+# Generated icons (media-converter)
+artifacts/media-converter/public/apple-touch-icon.png
+artifacts/media-converter/public/icons/
+
 # Logs
 *.log
 npm-debug.log*

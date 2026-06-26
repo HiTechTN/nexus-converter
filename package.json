@@ -1,6 +1,6 @@
 {
   "name": "nexus-converter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Application web full-stack de téléchargement et conversion de médias",
   "scripts": {

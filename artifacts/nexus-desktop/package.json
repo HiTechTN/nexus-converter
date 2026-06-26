@@ -1,6 +1,6 @@
 {
   "name": "@workspace/nexus-desktop",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "NEXUS CONVERTER — Desktop Application (Electron)",
   "author": "HiTechTN <hitechtn@users.noreply.github.com>",
   "homepage": "https://github.com/HiTechTN/nexus-converter",

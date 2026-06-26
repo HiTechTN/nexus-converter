@@ -103,9 +103,6 @@ importers:
 
   artifacts/nexus-desktop:
     dependencies:
-      '@workspace/api-server':
-        specifier: workspace:*
-        version: link:../api-server
       electron-store:
         specifier: ^8.2.0
         version: 8.2.0
