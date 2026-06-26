@@ -11,6 +11,7 @@
     "generate-icons": "bash scripts/generate-icons.sh",
     "postinstall": "bash scripts/generate-icons.sh",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "lint": "echo 'no lint'"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.2.0",
+    "@vitest/coverage-v8": "^2.1.9",
     "@vitest/ui": "^2.1.9",
     "autoprefixer": "^10.4.0",
     "jsdom": "^29.1.1",
