@@ -15,8 +15,8 @@ curl -fsSL https://raw.githubusercontent.com/HiTechTN/nexus-converter/main/insta
 
 | Plateforme | Format(s) | Lien |
 |------------|-----------|------|
-| 🐧 **Linux** | `.AppImage` `.deb` `.rpm` `.tar.gz` | Voir les assets ci-dessous |
-| 🪟 **Windows** | `.exe` `.portable.exe` `.msi` | Voir les assets ci-dessous |
+| 🐧 **Linux** | `.AppImage` `.deb` `.tar.gz` | Voir les assets ci-dessous |
+| 🪟 **Windows** | `.exe` `.portable.exe` | Voir les assets ci-dessous |
 | 🤖 **Android** | `.apk` `.aab` | Voir les assets ci-dessous |
 | 🍎 **iOS** | `.ipa` | Voir les assets ci-dessous |
 | 🌐 **Web** | GitHub Pages | https://hitechtn.github.io/nexus-converter |

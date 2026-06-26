@@ -314,7 +314,7 @@ jobs:
       - name: Add & Sync Capacitor iOS
         run: |
           cd artifacts/nexus-mobile
-          [ -d ios/App ] || npx cap add ios
+          [ -d ios/App/App.xcodeproj ] || npx cap add ios
           npx cap sync ios
 
       - name: Build iOS (debug)

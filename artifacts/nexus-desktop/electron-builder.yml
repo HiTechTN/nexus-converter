@@ -38,9 +38,6 @@ linux:
       arch:
         - x64
         - arm64
-    - target: rpm
-      arch:
-        - x64
     - target: tar.gz
       arch:
         - x64
@@ -71,15 +68,6 @@ deb:
     - python3
     - python3-pip
 
-# ─── RPM ──────────────────────────────────────────────────────────────────────
-
-rpm:
-  depends:
-    - nodejs >= 18
-    - ffmpeg
-    - python3
-    - python3-pip
-
 # ─── Windows ──────────────────────────────────────────────────────────────────
 
 win:
@@ -90,9 +78,7 @@ win:
     - target: portable
       arch:
         - x64
-    - target: msi
-      arch:
-        - x64
+
   icon: resources/icons/icon.ico
 
 nsis:
@@ -109,8 +95,6 @@ nsis:
 portable:
   artifactName: "${productName}-${version}-portable.${ext}"
 
-msi:
-  artifactName: "${productName}-${version}-setup.${ext}"
 
 # ─── macOS (future) ───────────────────────────────────────────────────────────
 
