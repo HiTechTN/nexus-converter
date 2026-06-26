@@ -365,7 +365,8 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   create-release:
     name: "🏷️ Create GitHub Release"
-    needs: [desktop-linux, desktop-windows, mobile-android, mobile-ios]
+    if: always()
+    needs: [build-web, desktop-linux, desktop-windows, mobile-android, mobile-ios]
     runs-on: ubuntu-latest
     permissions:
       contents: write
