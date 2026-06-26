@@ -1,4 +1,7 @@
 packages:
   - 'lib/*'
   - 'artifacts/*'
-onlyBuiltDependencies: '["esbuild"]'
+onlyBuiltDependencies:
+  - esbuild
+  - electron
+  - '@capacitor/cli'

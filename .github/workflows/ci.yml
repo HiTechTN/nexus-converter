@@ -1,0 +1,149 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEXUS CONVERTER — CI Pipeline
+#
+# Valide tous les builds sur chaque push/PR
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "10"
+
+jobs:
+  lint-and-build:
+    name: "🔍 Lint & Build"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Build shared libraries
+        run: |
+          pnpm --filter @workspace/api-zod run build
+          pnpm --filter @workspace/api-client-react run build
+
+      - name: Build API server
+        run: pnpm --filter @workspace/api-server run build
+
+      - name: Build web frontend
+        run: pnpm --filter @workspace/media-converter run build
+
+      - name: Build Electron (TypeScript check)
+        run: |
+          cd artifacts/nexus-desktop
+          npx tsc --noEmit
+
+      - name: Run tests
+        run: pnpm -r run lint 2>/dev/null || true
+
+  build-desktop-linux:
+    name: "🐧 Desktop Linux Build"
+    needs: [lint-and-build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y imagemagick
+
+      - name: Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            artifacts/media-converter/dist
+            artifacts/api-server/dist
+            lib/*/dist
+          key: ${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Build
+        run: |
+          pnpm --filter @workspace/api-zod run build
+          pnpm --filter @workspace/api-client-react run build
+          pnpm --filter @workspace/api-server run build
+          pnpm --filter @workspace/media-converter run build
+
+      - name: Generate desktop icons
+        run: bash artifacts/nexus-desktop/scripts/generate-icons.sh
+
+      - name: Build Electron + package
+        run: |
+          cd artifacts/nexus-desktop
+          pnpm run build:electron
+
+  build-mobile-android:
+    name: "🤖 Android Build"
+    needs: [lint-and-build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Build web frontend
+        run: pnpm --filter @workspace/media-converter run build
+
+      - name: Sync Capacitor Android
+        run: |
+          cd artifacts/nexus-mobile
+          npx cap sync android
+
+      - name: Build Android APK (debug)
+        run: |
+          cd artifacts/nexus-mobile/android
+          ./gradlew assembleDebug

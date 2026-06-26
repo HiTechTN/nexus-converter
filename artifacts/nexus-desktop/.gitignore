@@ -1,0 +1,6 @@
+dist-electron/
+release/
+resources/icons/*.png
+resources/icons/*.ico
+resources/icons/*.icns
+resources/icons/icon.iconset/
