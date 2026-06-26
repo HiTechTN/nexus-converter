@@ -1,0 +1,135 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEXUS CONVERTER — electron-builder configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+
+appId: com.nexusconverter.app
+productName: NEXUS Converter
+copyright: "Copyright © 2026 HiTechTN"
+
+directories:
+  output: release
+  buildResources: resources
+
+files:
+  - dist-electron/**/*
+  - package.json
+
+artifactName: "NEXUS-Converter-${version}-${arch}.${ext}"
+
+extraResources:
+  - from: ../media-converter/dist
+    to: renderer
+    filter:
+      - "**/*"
+  - from: ../api-server/dist
+    to: api-server
+    filter:
+      - "**/*"
+
+# ─── Linux ────────────────────────────────────────────────────────────────────
+
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+        - arm64
+    - target: deb
+      arch:
+        - x64
+        - arm64
+    - target: tar.gz
+      arch:
+        - x64
+        - arm64
+  category: Utility
+  icon: resources/icons
+  synopsis: "Media Download & Conversion Tool"
+  description: "Téléchargez et convertissez vos médias depuis 1000+ sites (YouTube, TikTok, Instagram, Twitch...)"
+  packageCategory: utils
+  desktop:
+    Name: NEXUS Converter
+    Comment: "Media download and conversion application"
+    Categories: Utility;AudioVideo;Network;
+    MimeType: x-scheme-handler/nexus;
+  maintainer: "HiTechTN <hitechtn@users.noreply.github.com>"
+
+# ─── AppImage ──────────────────────────────────────────────────────────────────
+
+appImage:
+  # Pas de fichier license spécifique — utilise celle du projet
+
+# ─── DEB ──────────────────────────────────────────────────────────────────────
+
+deb:
+  depends:
+    - nodejs (>= 18)
+    - ffmpeg
+    - python3
+    - python3-pip
+
+# ─── Windows ──────────────────────────────────────────────────────────────────
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+
+  icon: resources/icons/icon.ico
+
+nsis:
+  oneClick: false
+  perMachine: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: NEXUS Converter
+  installerIcon: resources/icons/icon.ico
+  uninstallerIcon: resources/icons/icon.ico
+  license: ../../LICENSE
+
+portable:
+  artifactName: "${productName}-${version}-portable.${ext}"
+
+
+# ─── macOS (future) ───────────────────────────────────────────────────────────
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+  icon: resources/icons/icon.icns
+  category: public.app-category.utilities
+  artifactName: "${productName}-${version}-mac-${arch}.${ext}"
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+# ─── Publish ───────────────────────────────────────────────────────────────────
+
+publish:
+  provider: github
+  owner: HiTechTN
+  repo: nexus-converter
+  releaseType: release
+
+# ─── Compression ───────────────────────────────────────────────────────────────
+
+compression: maximum
+removePackageScripts: true

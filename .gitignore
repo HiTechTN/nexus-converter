@@ -1,0 +1,33 @@
+node_modules/
+dist/
+.turbo/
+.env
+*.local
+
+# Temporary files
+tmp/
+*.mp4
+*.mkv
+*.mp3
+*.wav
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.tsbuildinfo
+
+# Generated icons (media-converter)
+artifacts/media-converter/public/apple-touch-icon.png
+artifacts/media-converter/public/icons/
+
+# Logs
+*.log
+npm-debug.log*

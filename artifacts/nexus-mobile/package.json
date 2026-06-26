@@ -1,0 +1,32 @@
+{
+  "name": "@workspace/nexus-mobile",
+  "version": "1.1.0",
+  "description": "NEXUS CONVERTER — Mobile Application (Capacitor)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:web": "cd ../media-converter && pnpm run build",
+    "sync": "pnpm run build:web && cap sync",
+    "sync:android": "pnpm run build:web && cap sync android",
+    "sync:ios": "pnpm run build:web && cap sync ios",
+    "open:android": "cap open android",
+    "open:ios": "cap open ios",
+    "build:android": "pnpm run sync:android && cd android && ./gradlew assembleDebug",
+    "build:android:release": "pnpm run sync:android && cd android && ./gradlew assembleRelease",
+    "build:android:aab": "pnpm run sync:android && cd android && ./gradlew bundleRelease",
+    "build:ios": "pnpm run sync:ios && cd ios && xcodebuild -workspace App.xcworkspace -scheme App -configuration Release build",
+    "build:ios:archive": "pnpm run sync:ios && cd ios && xcodebuild -workspace App.xcworkspace -scheme App -configuration Release archive -archivePath build/App.xcarchive",
+    "build:ios:ipa": "pnpm run build:ios:archive && cd ios && xcodebuild -exportArchive -archivePath build/App.xcarchive -exportPath build/App.ipa -exportOptionsPlist exportOptions.plist",
+    "clean": "rm -rf android ios dist"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.0",
+    "@capacitor/core": "^6.1.0",
+    "@capacitor/ios": "^6.1.0",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.0"
+  }
+}

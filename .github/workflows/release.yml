@@ -1,0 +1,433 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEXUS CONVERTER — Multi-Platform Release Pipeline
+#
+# Build et publie tous les artifacts :
+#   - 🌐 Web (GitHub Pages)
+#   - 🖥️ Desktop Linux (.AppImage, .deb, .rpm, .tar.gz)
+#   - 🖥️ Desktop Windows (.exe, .portable, .msi)
+#   - 📱 Android (.apk, .aab)
+#   - 📱 iOS (.ipa)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g., 1.0.0)"
+        required: true
+        default: "1.0.0"
+
+# ─── Env ──────────────────────────────────────────────────────────────────────
+
+env:
+  NODE_VERSION: "22"
+  PNPM_VERSION: "10"
+  REGISTRY: ghcr.io
+
+# ─── Concurrency ─────────────────────────────────────────────────────────────
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ─── Jobs ─────────────────────────────────────────────────────────────────────
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # 1. BUILD WEB (base pour tous les autres packages)
+  # ──────────────────────────────────────────────────────────────────────────
+  build-web:
+    name: "🌐 Build Web"
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Build shared libraries
+        run: |
+          pnpm --filter @workspace/api-zod run build
+          pnpm --filter @workspace/api-client-react run build
+          pnpm --filter @workspace/api-server run build
+
+      - name: Build web frontend
+        run: pnpm --filter @workspace/media-converter run build
+
+      - name: Upload web build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: artifacts/media-converter/dist/
+          retention-days: 3
+
+      - name: Upload api-server build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-server-build
+          path: artifacts/api-server/dist/
+          retention-days: 3
+
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 2. BUILD DESKTOP LINUX (.AppImage, .deb, .rpm, .tar.gz)
+  # ──────────────────────────────────────────────────────────────────────────
+  desktop-linux:
+    name: "🖥️ Desktop Linux"
+    needs: [build-web]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install system dependencies (Linux)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            dpkg-dev fakeroot rpm \
+            libx11-dev libxext-dev libxrender-dev \
+            libgles2-mesa-dev libegl1-mesa-dev \
+            libdbus-1-dev libxkbfile-dev \
+            imagemagick
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Download web build
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: artifacts/media-converter/dist/
+
+      - name: Download api-server build
+        uses: actions/download-artifact@v4
+        with:
+          name: api-server-build
+          path: artifacts/api-server/dist/
+
+      - name: Generate desktop icons
+        run: bash artifacts/nexus-desktop/scripts/generate-icons.sh
+
+      - name: Build Electron app
+        run: |
+          cd artifacts/nexus-desktop
+          pnpm run build:electron
+        env:
+          NODE_ENV: production
+
+      - name: Package for Linux
+        run: |
+          cd artifacts/nexus-desktop
+          npx electron-builder --linux --publish=never
+        env:
+          NODE_ENV: production
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-linux
+          path: |
+            artifacts/nexus-desktop/release/*.AppImage
+            artifacts/nexus-desktop/release/*.deb
+            artifacts/nexus-desktop/release/*.tar.gz
+            artifacts/nexus-desktop/release/*.rpm
+            artifacts/nexus-desktop/release/*.yml
+            artifacts/nexus-desktop/release/*.blockmap
+          retention-days: 3
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 3. BUILD DESKTOP WINDOWS (.exe, .portable, .msi)
+  # ──────────────────────────────────────────────────────────────────────────
+  desktop-windows:
+    name: "🖥️ Desktop Windows"
+    needs: [build-web]
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Download web build
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: artifacts/media-converter/dist/
+
+      - name: Download api-server build
+        uses: actions/download-artifact@v4
+        with:
+          name: api-server-build
+          path: artifacts/api-server/dist/
+
+      - name: Build Electron app
+        run: |
+          cd artifacts/nexus-desktop
+          pnpm run build:electron
+        env:
+          NODE_ENV: production
+
+      - name: Package for Windows
+        run: |
+          cd artifacts/nexus-desktop
+          npx electron-builder --win --publish=never
+        env:
+          NODE_ENV: production
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-windows
+          path: |
+            artifacts/nexus-desktop/release/*.exe
+            artifacts/nexus-desktop/release/*.yml
+            artifacts/nexus-desktop/release/*.blockmap
+          retention-days: 3
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 4. BUILD ANDROID (.apk, .aab)
+  # ──────────────────────────────────────────────────────────────────────────
+  mobile-android:
+    name: "📱 Android APK/AAB"
+    needs: [build-web]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Download web build
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: artifacts/media-converter/dist/
+
+      - name: Add & Sync Capacitor Android
+        run: |
+          cd artifacts/nexus-mobile
+          [ -d android ] || npx cap add android
+          npx cap sync android
+
+      - name: Build Android APK (debug)
+        run: |
+          cd artifacts/nexus-mobile/android
+          ./gradlew assembleDebug
+
+      - name: Build Android AAB (release)
+        run: |
+          cd artifacts/nexus-mobile/android
+          ./gradlew bundleRelease
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ secrets.ANDROID_KEYSTORE_PATH }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-android
+          path: |
+            artifacts/nexus-mobile/android/app/build/outputs/apk/debug/*.apk
+            artifacts/nexus-mobile/android/app/build/outputs/bundle/release/*.aab
+          retention-days: 3
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 5. BUILD iOS (.ipa) — macOS runner uniquement
+  # ──────────────────────────────────────────────────────────────────────────
+  mobile-ios:
+    name: "📱 iOS IPA"
+    needs: [build-web]
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Download web build
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: artifacts/media-converter/dist/
+
+      - name: Add & Sync Capacitor iOS
+        run: |
+          cd artifacts/nexus-mobile
+          [ -d ios/App/App.xcodeproj ] || npx cap add ios
+          npx cap sync ios
+
+      - name: Build iOS (debug)
+        run: |
+          cd artifacts/nexus-mobile/ios
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath build \
+            build
+
+      - name: Build iOS (release archive)
+        run: |
+          cd artifacts/nexus-mobile/ios
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -archivePath build/App.xcarchive \
+            archive
+        env:
+          APPLE_DEVELOPER_TEAM: ${{ secrets.APPLE_DEVELOPER_TEAM }}
+          APPLE_CERTIFICATES: ${{ secrets.APPLE_CERTIFICATES }}
+
+      - name: Export IPA
+        run: |
+          cd artifacts/nexus-mobile/ios
+          if [ -n "$APPLE_DEVELOPER_TEAM" ]; then
+            xcodebuild -exportArchive \
+              -archivePath build/App.xcarchive \
+              -exportPath build/App.ipa \
+              -exportOptionsPlist exportOptions.plist
+          else
+            echo "APPLE_DEVELOPER_TEAM not set — skipping IPA export"
+          fi
+
+      - name: Upload iOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-ios
+          path: |
+            artifacts/nexus-mobile/ios/build/*.ipa
+            artifacts/nexus-mobile/ios/build/*.xcarchive
+          retention-days: 3
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 6. CREATE GITHUB RELEASE
+  # ──────────────────────────────────────────────────────────────────────────
+  create-release:
+    name: "🏷️ Create GitHub Release"
+    if: always()
+    needs: [build-web, desktop-linux, desktop-windows, mobile-android, mobile-ios]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts/
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          VERSION="${{ needs.build-web.outputs.version }}"
+
+          # Desktop Linux
+          if [ -d "release-artifacts/desktop-linux" ]; then
+            cp release-artifacts/desktop-linux/* release-assets/ 2>/dev/null || true
+          fi
+
+          # Desktop Windows
+          if [ -d "release-artifacts/desktop-windows" ]; then
+            cp release-artifacts/desktop-windows/* release-assets/ 2>/dev/null || true
+          fi
+
+          # Mobile Android
+          if [ -d "release-artifacts/mobile-android" ]; then
+            mkdir -p release-assets/android
+            find release-artifacts/mobile-android -name "*.apk" -exec cp {} release-assets/android/ \;
+            find release-artifacts/mobile-android -name "*.aab" -exec cp {} release-assets/android/ \;
+          fi
+
+          # Mobile iOS
+          if [ -d "release-artifacts/mobile-ios" ]; then
+            cp release-artifacts/mobile-ios/*.ipa release-assets/ 2>/dev/null || true
+          fi
+
+          echo "=== Release assets ==="
+          ls -lh release-assets/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.build-web.outputs.version }}
+          name: "NEXUS CONVERTER v${{ needs.build-web.outputs.version }}"
+          body_path: .github/RELEASE_TEMPLATE.md
+          draft: false
+          prerelease: false
+          files: release-assets/**/*
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

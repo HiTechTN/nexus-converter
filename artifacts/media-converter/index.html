@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0a1a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="NEXUS Converter" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="NEXUS Converter" />
+    <meta name="msapplication-TileColor" content="#0a0a1a" />
+    <meta name="msapplication-TileImage" content="/icons/icon-192.png" />
+    <meta name="description" content="Application de téléchargement et conversion de médias — 1000+ sites supportés (YouTube, TikTok, Instagram, Twitch...)" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png" />
+
+    <!-- Preconnect Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <title>NEXUS CONVERTER - Conversion de médias</title>
+
+    <style>
+      .bg-geometric {
+        background-image: url('/images/bg-geometric.svg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      .bg-geometric-light {
+        background-image: url('/images/bg-geometric.svg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0.08;
+      }
+
+      /* Empêcher le zoom sur les inputs sur iOS */
+      input, select, textarea, button {
+        font-size: 16px !important;
+      }
+
+      /* Splash screen minimal */
+      @media (display-mode: standalone) {
+        body { background-color: #0a0a1a; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Enregistrement du service worker pour PWA
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(
+            (reg) => console.log('[PWA] Service Worker enregistré:', reg.scope),
+            (err) => console.warn('[PWA] Échec SW:', err)
+          );
+        });
+      }
+    </script>
+  </body>
+</html>
