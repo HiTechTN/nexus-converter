@@ -340,11 +340,14 @@ jobs:
       - name: Export IPA
         run: |
           cd artifacts/nexus-mobile/ios
-          xcodebuild -exportArchive \
-            -archivePath build/App.xcarchive \
-            -exportPath build/App.ipa \
-            -exportOptionsPlist exportOptions.plist
-        if: ${{ secrets.APPLE_DEVELOPER_TEAM != '' }}
+          if [ -n "$APPLE_DEVELOPER_TEAM" ]; then
+            xcodebuild -exportArchive \
+              -archivePath build/App.xcarchive \
+              -exportPath build/App.ipa \
+              -exportOptionsPlist exportOptions.plist
+          else
+            echo "APPLE_DEVELOPER_TEAM not set — skipping IPA export"
+          fi
 
       - name: Upload iOS artifacts
         uses: actions/upload-artifact@v4
