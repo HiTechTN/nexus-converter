@@ -151,7 +151,7 @@ trap cleanup SIGINT SIGTERM
 PORT=$API_PORT FRONTEND_PORT=$FRONTEND_PORT pnpm --filter @workspace/api-server run dev &
 API_PID=$!
 
-PORT=$FRONTEND_PORT pnpm --filter @workspace/media-converter run dev &
+FRONTEND_PORT=$FRONTEND_PORT PORT=$API_PORT pnpm --filter @workspace/media-converter run dev &
 FRONTEND_PID=$!
 
 # Attendre

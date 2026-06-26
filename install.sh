@@ -21,7 +21,7 @@ if [[ "$0" == "bash" || "$0" == "sh" || ! -f "$0" ]]; then
   echo ""
 
   INSTALL_DIR="${HOME}/nexus-converter"
-  VERSION="1.1.0"
+  VERSION="1.2.0"
 
   echo "[i] Création du dossier ${INSTALL_DIR}..."
   mkdir -p "$INSTALL_DIR"
