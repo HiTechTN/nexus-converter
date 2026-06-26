@@ -71,6 +71,10 @@ jobs:
       - name: Build web frontend
         run: pnpm --filter @workspace/media-converter run build
 
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
       - name: Upload web build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -108,10 +112,6 @@ jobs:
           name: api-server-dist-zip
           path: artifacts/api-server/nexus-api-server-*.zip
           retention-days: 3
-
-      - name: Extract version
-        id: version
-        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
 
   # ──────────────────────────────────────────────────────────────────────────
   # 2. BUILD DESKTOP LINUX (.AppImage, .deb, .rpm, .tar.gz)
