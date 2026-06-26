@@ -4,7 +4,8 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 set -euo pipefail
 
-ICONS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../public/icons" && pwd)"
+ICONS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../public/icons" 2>/dev/null && pwd || echo "$(dirname "${BASH_SOURCE[0]}")/../public/icons")"
+mkdir -p "$ICONS_DIR"
 SVG_FILE="$ICONS_DIR/icon.svg"
 
 if [[ ! -f "$SVG_FILE" ]]; then
