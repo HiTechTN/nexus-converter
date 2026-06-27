@@ -19,6 +19,7 @@
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white" alt="Node"></a>
   <a href="https://pnpm.io"><img src="https://img.shields.io/badge/pnpm-%3E%3D8-F69220?logo=pnpm&logoColor=white" alt="pnpm"></a>
   <a href="https://hitechtn.github.io/nexus-converter"><img src="https://img.shields.io/badge/landing%20page-github%20pages-2ea44f" alt="Landing Page"></a>
+  <a href="https://github.com/HiTechTN/nexus-converter/pkgs/container/nexus-converter"><img src="https://img.shields.io/badge/docker-ghcr.io-2496ED?logo=docker&logoColor=white" alt="Docker"></a>
 </p>
 
 ---
@@ -26,16 +27,19 @@
 ## 🚀 Quick Start
 
 ```bash
-# Méthode 1 — Installation automatique (recommandé)
+# Méthode 1 — Docker (recommandé, depuis GitHub Packages)
+docker run -p 80:3000 ghcr.io/hitechtn/nexus-converter:latest
+
+# Méthode 2 — Installation automatique
 curl -fsSL https://raw.githubusercontent.com/HiTechTN/nexus-converter/main/install.sh | bash
 cd ~/nexus-converter && ./start.sh
 
-# Méthode 2 — Docker
+# Méthode 3 — Cloner + Docker
 git clone https://github.com/HiTechTN/nexus-converter.git && cd nexus-converter
 docker compose up --build -d
 ```
 
-> 👉 **http://localhost:5173** (dev) ou **http://localhost** (Docker)
+> 👉 **http://localhost:3000** (Docker) ou **http://localhost:5173** (dev)
 
 ---
 

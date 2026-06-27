@@ -1,7 +1,6 @@
-version: "3.8"
-
 services:
   nexus-converter:
+    image: ghcr.io/hitechtn/nexus-converter:latest
     build:
       context: .
       dockerfile: Dockerfile
