@@ -19,7 +19,7 @@ COPY artifacts/api-server ./artifacts/api-server/
 COPY artifacts/media-converter ./artifacts/media-converter/
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Build shared libs
 RUN pnpm --filter @workspace/api-zod run build
@@ -54,10 +54,10 @@ COPY --from=builder /app/lib/api-client-react/dist ./lib/api-client-react/dist
 COPY --from=builder /app/lib/api-client-react/package.json ./lib/api-client-react/package.json
 
 # Copy root config
-COPY package.json pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod --no-frozen-lockfile
 
 # Create tmp directory
 RUN mkdir -p /app/tmp
