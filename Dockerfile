@@ -1,8 +1,8 @@
 # ─── Stage 1: Build ────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install pnpm + bash (for postinstall scripts)
+RUN npm install -g pnpm && apk add --no-cache bash
 
 WORKDIR /app
 
