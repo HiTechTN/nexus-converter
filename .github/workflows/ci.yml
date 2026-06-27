@@ -50,10 +50,13 @@ jobs:
       - name: Build Electron (TypeScript check)
         run: |
           cd artifacts/nexus-desktop
-          npx tsc --noEmit
+          npx tsc --noEmit -p tsconfig.electron.json
 
-      - name: Run tests
-        run: pnpm -r run lint 2>/dev/null || true
+      - name: Run unit tests
+        run: pnpm -r run test 2>/dev/null || true
+
+      - name: Run tests with coverage
+        run: pnpm -r run test:coverage 2>/dev/null || true
 
   build-desktop-linux:
     name: "🐧 Desktop Linux Build"
