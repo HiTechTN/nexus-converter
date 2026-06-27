@@ -10,7 +10,15 @@ import type {
 
 // ─── API Base ────────────────────────────────────────────────────────────────
 
+function isCapacitor(): boolean {
+  return typeof (window as any).Capacitor !== "undefined" &&
+    (window as any).Capacitor.isNativePlatform();
+}
+
 function getBaseUrl(): string {
+  if (isCapacitor()) {
+    return "http://127.0.0.1:3000";
+  }
   if (typeof window !== "undefined") {
     return window.location.origin;
   }

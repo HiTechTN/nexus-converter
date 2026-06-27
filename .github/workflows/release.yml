@@ -348,6 +348,11 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install Android NDK
+        run: |
+          sdkmanager --install "ndk;27.0.12077973" || true
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile=false
 
@@ -357,10 +362,24 @@ jobs:
           name: web-build
           path: artifacts/media-converter/dist/
 
-      - name: Add & Sync Capacitor Android
+      - name: Bundle API server for mobile
+        run: |
+          cd artifacts/nexus-mobile
+          bash bundle-api-server.sh
+
+      - name: Add Capacitor Android
         run: |
           cd artifacts/nexus-mobile
           [ -d android ] || npx cap add android
+
+      - name: Setup Node.js Mobile integration
+        run: |
+          cd artifacts/nexus-mobile
+          bash setup-android.sh
+
+      - name: Sync Capacitor Android
+        run: |
+          cd artifacts/nexus-mobile
           npx cap sync android
 
       - name: Build Android APK (debug)
