@@ -885,8 +885,10 @@
     <div class="section-divider"></div>
     <p class="section-subtitle">Testez l'API en direct — Lancez d'abord l'image <strong>GitHub Packages</strong> :</p>
     <div style="text-align:center;margin-bottom:24px;">
-      <pre style="display:inline-block;background:#0a0a1a;padding:8px 20px;border-radius:8px;font-size:0.85rem;color:#00ff88;">
-docker run -d -p 3000:3000 ghcr.io/hitechtn/nexus-converter:edge</pre>
+      <pre style="display:inline-block;background:#0a0a1a;padding:8px 20px;border-radius:8px;font-size:0.85rem;color:#00ff88;text-align:left;">
+PORT=3000; while ss -tln "sport = :$PORT" 2>/dev/null | grep -q ":$PORT"; do PORT=$((PORT+1)); done; \
+docker run -d -p $PORT:3000 ghcr.io/hitechtn/nexus-converter:edge \
+&& echo "✓ API sur http://localhost:$PORT"</pre>
     </div>
     <p class="section-subtitle" style="margin-top:0;">Puis entrez une URL YouTube ci-dessous pour voir les métadonnées :</p>
     <div class="api-tester">
@@ -1078,35 +1080,39 @@ docker run -d -p 3000:3000 ghcr.io/hitechtn/nexus-converter:edge</pre>
     result.textContent = '';
     status.innerHTML = '';
 
-    const baseUrl = 'http://localhost:3000';
+    let found = false;
+    for (let port = 3000; port <= 3010; port++) {
+      try {
+        const baseUrl = 'http://localhost:' + port;
+        const response = await fetch(baseUrl + '/api/media/info', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+          signal: AbortSignal.timeout(2000),
+        });
 
-    try {
-      const response = await fetch(baseUrl + '/api/media/info', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-        signal: AbortSignal.timeout(5000),
-      });
-
-      loading.style.display = 'none';
-
-      if (response.ok) {
-        const data = await response.json();
-        status.innerHTML = '<span class="tester-status" style="background:rgba(0,255,136,0.15);color:#00ff88;">✓ Succès — API sur ' + baseUrl + '</span>';
-        result.textContent = JSON.stringify(data, null, 2);
-        result.classList.add('show');
-        btn.disabled = false;
-        return;
-      } else {
-        const err = await response.json().catch(() => ({ error: 'Erreur ' + response.status }));
-        status.innerHTML = '<span class="tester-status" style="background:rgba(233,69,96,0.15);color:#e94560;">✗ Erreur</span>';
-        result.textContent = JSON.stringify(err, null, 2);
-        result.classList.add('show');
-        btn.disabled = false;
-        return;
+        if (response.ok) {
+          loading.style.display = 'none';
+          const data = await response.json();
+          status.innerHTML = '<span class="tester-status" style="background:rgba(0,255,136,0.15);color:#00ff88;">✓ Succès — API sur ' + baseUrl + '</span>';
+          result.textContent = JSON.stringify(data, null, 2);
+          result.classList.add('show');
+          btn.disabled = false;
+          found = true;
+          return;
+        } else if (response.status !== 404) {
+          loading.style.display = 'none';
+          const err = await response.json().catch(() => ({ error: 'Erreur ' + response.status }));
+          status.innerHTML = '<span class="tester-status" style="background:rgba(233,69,96,0.15);color:#e94560;">✗ Erreur</span>';
+          result.textContent = JSON.stringify(err, null, 2);
+          result.classList.add('show');
+          btn.disabled = false;
+          found = true;
+          return;
+        }
+      } catch (e) {
+        // port pas accessible, continuer
       }
-    } catch (e) {
-      // API inaccessible
     }
 
     loading.style.display = 'none';
@@ -1114,8 +1120,9 @@ docker run -d -p 3000:3000 ghcr.io/hitechtn/nexus-converter:edge</pre>
       + '<div style="margin-top:16px;padding:16px;background:rgba(15,52,96,0.3);border-radius:8px;text-align:left;line-height:1.6;">\n'
       + '<p style="color:#e94560;font-weight:600;margin-bottom:8px;">🚀 Lancez l\'API localement avec Docker</p>\n'
       + '<p style="color:#aaaacc;margin-bottom:12px;">Tirez l\'image depuis <strong>GitHub Packages</strong> et lancez-la en une commande :</p>\n'
-      + '<pre style="background:#0a0a1a;padding:12px;border-radius:6px;font-size:0.8rem;margin-bottom:12px;">docker run -d -p 3000:3000 \\\n'
-      + '  ghcr.io/hitechtn/nexus-converter:edge</pre>\n'
+      + '<pre style="background:#0a0a1a;padding:12px;border-radius:6px;font-size:0.8rem;margin-bottom:12px;">PORT=3000; while ss -tln "sport = :$PORT" 2>/dev/null | grep -q ":$PORT" 2>/dev/null; do PORT=$((PORT+1)); done; \\\n'
+      + 'docker run -d -p $PORT:3000 ghcr.io/hitechtn/nexus-converter:edge \\\n'
+      + '&& echo "✓ API sur http://localhost:$PORT"</pre>\n'
       + '<p style="color:#aaaacc;margin-bottom:8px;">Puis testez avec curl :</p>\n'
       + '<pre style="background:#0a0a1a;padding:12px;border-radius:6px;font-size:0.8rem;">curl -X POST http://localhost:3000/api/media/info \\\n'
       + '  -H "Content-Type: application/json" \\\n'
