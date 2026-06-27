@@ -24,7 +24,9 @@ if [[ "$0" == "bash" || "$0" == "sh" || ! -f "$0" ]]; then
   VERSION="1.2.4"
 
   echo "[i] Préparation du dossier ${INSTALL_DIR}..."
-  rm -rf "$INSTALL_DIR"
+  if ! rm -rf "$INSTALL_DIR" 2>/dev/null; then
+    sudo rm -rf "$INSTALL_DIR" 2>/dev/null || true
+  fi
   mkdir -p "$INSTALL_DIR"
 
   echo "[i] Téléchargement du code source v${VERSION}..."
