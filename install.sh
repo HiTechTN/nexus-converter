@@ -21,7 +21,7 @@ if [[ "$0" == "bash" || "$0" == "sh" || ! -f "$0" ]]; then
   echo ""
 
   INSTALL_DIR="${HOME}/nexus-converter"
-  VERSION="1.2.4"
+  VERSION="1.2.5"
 
   echo "[i] Préparation du dossier ${INSTALL_DIR}..."
   if ! rm -rf "$INSTALL_DIR" 2>/dev/null; then
