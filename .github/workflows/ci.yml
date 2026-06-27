@@ -138,6 +138,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile=false
 
+      - name: Build shared libraries
+        run: |
+          pnpm --filter @workspace/api-zod run build
+          pnpm --filter @workspace/api-client-react run build
+
       - name: Build web frontend
         run: pnpm --filter @workspace/media-converter run build
 
