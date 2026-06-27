@@ -10,8 +10,10 @@ set -euo pipefail
 #   3. Modifies build.gradle to include CMake + ndk config
 #   4. Creates the Java service to start the Node.js API server
 #   5. Adds the bundled nodejs-project to Android assets
-#   6. Patches MainActivity to start the service
-#   7. Patches AndroidManifest.xml to register the service
+#   6. Downloads ffmpeg ARM64 binary for Android
+#   7. Downloads Python 3 + yt-dlp for Android
+#   8. Patches MainActivity to start the service
+#   9. Patches AndroidManifest.xml to register the service
 # ═══════════════════════════════════════════════════════════════════════════════
 
 NODEJS_VERSION="v18.20.4"
@@ -83,7 +85,7 @@ cp -r "$NODEJS_PROJECT_DIR" "$ASSETS_DIR/nodejs-project"
 
 # ─── Step 6: Patch build.gradle ───────────────────────────────────────────────
 
-echo "[6/6] Patching build.gradle..."
+echo "[6/9] Patching build.gradle..."
 BUILD_GRADLE="$ANDROID_DIR/app/build.gradle"
 
 if ! grep -q "externalNativeBuild" "$BUILD_GRADLE" 2>/dev/null; then
@@ -99,7 +101,69 @@ if ! grep -q "jniLibs.srcDirs" "$BUILD_GRADLE" 2>/dev/null; then
   sed -i '/android {/a\    sourceSets {\n        main {\n            jniLibs.srcDirs "src\/main\/jniLibs"\n        }\n    }' "$BUILD_GRADLE"
 fi
 
-# ─── Step 7: Patch MainActivity ───────────────────────────────────────────────
+# ─── Step 7: Download ffmpeg binary for Android ARM64 ────────────────────────
+
+FFMPEG_VERSION="8.1.1"
+FFMPEG_BIN_URL="https://raw.githubusercontent.com/hzw1199/Android-FFmpeg-Prebuilt/main/ffmpeg-${FFMPEG_VERSION}/bin/ffmpeg"
+FFPROBE_BIN_URL="https://raw.githubusercontent.com/hzw1199/Android-FFmpeg-Prebuilt/main/ffmpeg-${FFMPEG_VERSION}/bin/ffprobe"
+
+echo "[7/9] Downloading ffmpeg ${FFMPEG_VERSION} for Android ARM64..."
+mkdir -p "$ASSETS_DIR/bin"
+
+if [ ! -f "$ASSETS_DIR/bin/ffmpeg" ]; then
+  curl -fsSL -o "$ASSETS_DIR/bin/ffmpeg" "$FFMPEG_BIN_URL"
+  chmod +x "$ASSETS_DIR/bin/ffmpeg"
+  echo "  → ffmpeg downloaded ($(du -h "$ASSETS_DIR/bin/ffmpeg" | cut -f1))"
+else
+  echo "  → ffmpeg already present, skipping"
+fi
+
+if [ ! -f "$ASSETS_DIR/bin/ffprobe" ]; then
+  curl -fsSL -o "$ASSETS_DIR/bin/ffprobe" "$FFPROBE_BIN_URL" || echo "  → ffprobe not available (non-fatal)"
+  [ -f "$ASSETS_DIR/bin/ffprobe" ] && chmod +x "$ASSETS_DIR/bin/ffprobe"
+else
+  echo "  → ffprobe already present, skipping"
+fi
+
+# ─── Step 8: Download Python 3 for Android + yt-dlp ─────────────────────────
+
+PYTHON_VERSION="3.14.5"
+PYTHON_URL="https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}-embed-android-aarch64.zip"
+
+echo "[8/9] Downloading Python ${PYTHON_VERSION} for Android ARM64..."
+if [ ! -d "$ASSETS_DIR/python" ]; then
+  PYTHON_TMP="/tmp/python-android-${PYTHON_VERSION}"
+  PYTHON_ZIP="/tmp/python-android-${PYTHON_VERSION}.zip"
+
+  curl -fsSL -o "$PYTHON_ZIP" "$PYTHON_URL"
+  mkdir -p "$PYTHON_TMP"
+  unzip -o "$PYTHON_ZIP" -d "$PYTHON_TMP" > /dev/null
+
+  # Handle potential single top-level directory in the ZIP
+  PYTHON_SRC="$PYTHON_TMP"
+  CONTENTS=("$PYTHON_TMP"/*)
+  if [ ${#CONTENTS[@]} -eq 1 ] && [ -d "${CONTENTS[0]}" ]; then
+    PYTHON_SRC="${CONTENTS[0]}"
+  fi
+
+  mkdir -p "$ASSETS_DIR/python"
+  cp -r "$PYTHON_SRC"/* "$ASSETS_DIR/python/"
+  rm -rf "$PYTHON_TMP" "$PYTHON_ZIP"
+  echo "  → Python ${PYTHON_VERSION} downloaded ($(du -sh "$ASSETS_DIR/python" | cut -f1))"
+else
+  echo "  → Python already present, skipping"
+fi
+
+echo "[9/9] Downloading yt-dlp..."
+if [ ! -f "$ASSETS_DIR/bin/yt-dlp.zip" ]; then
+  YTDLP_URL="https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.zip"
+  curl -fsSL -o "$ASSETS_DIR/bin/yt-dlp.zip" "$YTDLP_URL"
+  echo "  → yt-dlp.zip downloaded ($(du -h "$ASSETS_DIR/bin/yt-dlp.zip" | cut -f1))"
+else
+  echo "  → yt-dlp already present, skipping"
+fi
+
+# ─── Step 10: Patch MainActivity ──────────────────────────────────────────────
 
 MAIN_ACTIVITY="$JAVA_DIR/MainActivity.java"
 if [ ! -f "$MAIN_ACTIVITY" ]; then
@@ -121,7 +185,7 @@ public class MainActivity extends BridgeActivity {
 EOF
 fi
 
-# ─── Step 8: Patch AndroidManifest.xml ────────────────────────────────────────
+# ─── Step 11: Patch AndroidManifest.xml ───────────────────────────────────────
 
 MANIFEST="$ANDROID_DIR/app/src/main/AndroidManifest.xml"
 if [ -f "$MANIFEST" ]; then
@@ -134,9 +198,11 @@ fi
 
 echo ""
 echo "✓ Android project setup complete!"
-echo "  - libnode.so: $JNI_LIBS_DIR"
-echo "  - JNI bridge: $CPP_DIR"
+echo "  - libnode.so:     $JNI_LIBS_DIR"
+echo "  - JNI bridge:     $CPP_DIR"
 echo "  - Node.js server: $ASSETS_DIR/nodejs-project"
-echo "  - Service: $JAVA_DIR/NodeServerService.java"
+echo "  - ffmpeg/bin:     $ASSETS_DIR/bin"
+echo "  - Python runtime: $ASSETS_DIR/python"
+echo "  - Service:        $JAVA_DIR/NodeServerService.java"
 echo ""
 echo "Next: Run 'npx cap sync android' then build with Gradle."

@@ -1,29 +1,39 @@
 import { spawnSync } from "child_process";
+import { existsSync } from "fs";
 
-let _ffmpegPath = "ffmpeg";
+function findFfmpeg(): string {
+  const envPath = process.env.FFMPEG_PATH;
+  if (envPath && existsSync(envPath)) return envPath;
 
-export function setFfmpegPath(path: string): void {
-  _ffmpegPath = path;
+  const candidates = ["ffmpeg", "/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"];
+  for (const candidate of candidates) {
+    try {
+      const result = spawnSync(candidate, ["-version"], { stdio: "pipe" });
+      if (result.status === 0) return candidate;
+    } catch {
+      continue;
+    }
+  }
+  return "ffmpeg";
 }
+
+const FFMPEG_BIN = findFfmpeg();
 
 /**
  * Check if FFmpeg is available
  */
 export function checkFfmpeg(): boolean {
   try {
-    const result = spawnSync(_ffmpegPath, ["-version"], { stdio: "pipe" });
+    const result = spawnSync(FFMPEG_BIN, ["-version"], { stdio: "pipe" });
     return result.status === 0;
   } catch {
     return false;
   }
 }
 
-/**
- * Get FFmpeg version string
- */
 export function getFfmpegVersion(): string | null {
   try {
-    const result = spawnSync(_ffmpegPath, ["-version"], { stdio: "pipe" });
+    const result = spawnSync(FFMPEG_BIN, ["-version"], { stdio: "pipe" });
     if (result.status === 0) {
       const firstLine = result.stdout.toString().split("\n")[0];
       return firstLine;

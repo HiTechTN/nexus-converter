@@ -465,6 +465,9 @@ FRONTEND_PORT=$detected_frontend_port
 # Chemin vers yt-dlp (laisser vide pour détection automatique)
 YTDLP_PATH=
 
+# Chemin vers ffmpeg (laisser vide pour détection automatique)
+FFMPEG_PATH=
+
 # Dossier temporaire pour les fichiers convertis
 TMP_DIR=./tmp
 
