@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, afterAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import request from "supertest";
+import type { Readable } from "stream";
 import app from "../app.js";
 import { createJob, getJob, updateJob } from "../services/job-manager.js";
 
@@ -162,13 +163,13 @@ describe("API Routes (E2E)", () => {
         .get(`/api/media/progress/${job.id}`)
         .buffer(false)
         .parse((res, callback) => {
+          const stream = res as unknown as Readable;
           let data = "";
-          res.on("data", (chunk) => {
+          stream.on("data", (chunk: Buffer) => {
             data += chunk.toString();
-            // Close after first chunk received
-            res.destroy();
+            stream.destroy();
           });
-          res.on("end", () => callback(null, data));
+          stream.on("end", () => callback(null, data));
         });
 
       expect(res.status).toBe(200);
@@ -188,13 +189,13 @@ describe("API Routes (E2E)", () => {
         .get(`/api/media/progress/${job.id}`)
         .buffer(false)
         .parse((res, callback) => {
+          const stream = res as unknown as Readable;
           let data = "";
-          res.on("data", (chunk) => {
+          stream.on("data", (chunk: Buffer) => {
             data += chunk.toString();
-            // Close after receiving data
-            res.destroy();
+            stream.destroy();
           });
-          res.on("end", () => callback(null, data));
+          stream.on("end", () => callback(null, data));
         });
 
       expect(res.status).toBe(200);
