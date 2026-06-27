@@ -19,6 +19,9 @@
   "engines": {
     "node": ">=18"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "electron"]
+  },
   "devDependencies": {
     "concurrently": "^8.2.2",
     "typescript": "^5.4.0"

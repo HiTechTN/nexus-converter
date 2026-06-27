@@ -34,11 +34,15 @@ cd "$API_SERVER_DIR"
 if [ -d "dist" ] && [ -f "dist/index.js" ]; then
   echo "  → dist/ already exists, skipping build"
 else
+  # Ensure build scripts are approved for pnpm 11+
+  corepack pnpm approve-builds esbuild electron 2>/dev/null || true
   corepack pnpm run build 2>&1 || {
-    echo "  → pnpm build had warnings, checking dist..."
-    if [ ! -f "dist/index.js" ]; then
-      corepack npx tsc -p tsconfig.json
-    fi
+    echo "  → pnpm build failed, falling back to tsc..."
+    corepack npx tsc -p tsconfig.json 2>&1 || {
+      echo "  → tsc also failed. Ensure dependencies are installed:"
+      echo "     cd ../.. && pnpm install && pnpm approve-builds"
+      exit 1
+    }
   }
 fi
 

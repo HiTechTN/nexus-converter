@@ -19,16 +19,26 @@ echo "=== Génération des icônes desktop ==="
 # On crée des carrés avec dégradé et cercle (pas de texte complexe)
 BASE_ICON="$ICONS_DIR/base.png"
 
-# Créer la base (1024x1024)
-convert -size 1024x1024 xc:"$BG_COLOR" \
+# Créer la base (1024x1024) - font fallback si DejaVu-Sans-Bold n'est pas installée
+FONT="${FONT:-DejaVu-Sans-Bold}"
+if ! convert -size 1024x1024 xc:"$BG_COLOR" \
   -fill none -stroke "$HEX_COLOR" -strokewidth 12 \
   -draw "polygon 512,60 920,240 920,784 512,964 104,784 104,240" \
   -fill none -stroke "$SECONDARY_COLOR" -strokewidth 6 \
   -draw "polygon 512,160 800,280 800,744 512,864 224,744 224,280" \
   -fill "$ACCENT_COLOR" -draw "circle 512,512 512,420" \
-  -fill white -font "${FONT:-DejaVu-Sans-Bold}" -pointsize 350 -gravity center \
+  -fill white -font "$FONT" -pointsize 350 -gravity center \
   -annotate +0+30 'N' \
-  "$BASE_ICON"
+  "$BASE_ICON" 2>/dev/null; then
+  echo "  → Font '$FONT' not available, generating icon without text"
+  convert -size 1024x1024 xc:"$BG_COLOR" \
+    -fill none -stroke "$HEX_COLOR" -strokewidth 12 \
+    -draw "polygon 512,60 920,240 920,784 512,964 104,784 104,240" \
+    -fill none -stroke "$SECONDARY_COLOR" -strokewidth 6 \
+    -draw "polygon 512,160 800,280 800,744 512,864 224,744 224,280" \
+    -fill "$ACCENT_COLOR" -draw "circle 512,512 512,420" \
+    "$BASE_ICON"
+fi
 
 echo "  → Base icon created"
 

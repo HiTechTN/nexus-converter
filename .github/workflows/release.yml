@@ -362,6 +362,12 @@ jobs:
           name: web-build
           path: artifacts/media-converter/dist/
 
+      - name: Download api-server build
+        uses: actions/download-artifact@v4
+        with:
+          name: api-server-build
+          path: artifacts/api-server/dist/
+
       - name: Bundle API server for mobile
         run: |
           cd artifacts/nexus-mobile
@@ -446,7 +452,9 @@ jobs:
       - name: Add & Sync Capacitor iOS
         run: |
           cd artifacts/nexus-mobile
-          [ -d ios/App/App.xcodeproj ] || npx cap add ios
+          if [ ! -d ios ]; then
+            npx cap add ios
+          fi
           npx cap sync ios
 
       - name: Build iOS (debug)
