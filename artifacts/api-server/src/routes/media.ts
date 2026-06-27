@@ -160,7 +160,9 @@ router.get("/api/media/download/:jobId", (req: Request, res: Response) => {
   }
 
   const fileName = job.fileName || `download.${job.format}`;
-  res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+  const sanitized = fileName.replace(/[^\x20-\x7E]/g, "_").replace(/"/g, "'");
+  const encoded = encodeURIComponent(fileName).replace(/%20/g, " ");
+  res.setHeader("Content-Disposition", `attachment; filename="${sanitized}"; filename*=UTF-8''${encoded}`);
   res.setHeader("Content-Type", "application/octet-stream");
 
   const stream = createReadStream(job.filePath);

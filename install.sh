@@ -502,6 +502,37 @@ rm -rf tmp 2>/dev/null || true
 mkdir -p tmp
 log "Dossier tmp/ créé"
 
+# ─── Création du .desktop (menu applications) ──────────────────────────────
+step "CRÉATION DU RACCOURCI MENU APPLICATIONS"
+
+DESKTOP_FILE="$HOME/.local/share/applications/nexus-converter.desktop"
+DESKTOP_ICON="$SCRIPT_DIR/artifacts/nexus-desktop/resources/icons/256x256.png"
+
+mkdir -p "$HOME/.local/share/applications"
+
+cat > "$DESKTOP_FILE" << EOF
+[Desktop Entry]
+Name=NEXUS Converter
+Comment=Application de téléchargement et conversion de médias
+Exec=${SCRIPT_DIR}/start.sh
+Icon=${DESKTOP_ICON}
+Terminal=true
+Type=Application
+Categories=AudioVideo;Utility;
+Keywords=youtube;download;converter;media;video;audio;
+StartupNotify=true
+EOF
+
+if [[ -f "$DESKTOP_FILE" ]]; then
+  log "Raccourci créé : $DESKTOP_FILE"
+  # Rafraîchir la base de données des applications desktop
+  if command -v update-desktop-database &>/dev/null; then
+    update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
+  fi
+else
+  warn "Impossible de créer le raccourci menu"
+fi
+
 # ─── Résumé final ──────────────────────────────────────────────────────────
 step "INSTALLATION TERMINÉE"
 
