@@ -368,6 +368,9 @@ jobs:
           name: api-server-build
           path: artifacts/api-server/dist/
 
+      - name: Build workspace dependencies
+        run: pnpm --filter @workspace/api-zod run build
+
       - name: Bundle API server for mobile
         run: |
           cd artifacts/nexus-mobile
