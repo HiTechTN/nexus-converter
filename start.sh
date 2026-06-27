@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# NEXUS CONVERTER — Lanceur automatique (développement)
-# Détection de ports • Build auto • Démarrage des deux serveurs
-# ═══════════════════════════════════════════════════════════════════════════════
-
 BOLD="\033[1m"
 RED="\033[0;31m"
 GREEN="\033[0;32m"
@@ -22,7 +17,6 @@ info()   { echo -e "${BLUE}[i]${RESET} $1"; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# ─── Banner ──────────────────────────────────────────────────────────────────
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════╗${RESET}"
 echo -e "${BOLD}║       NEXUS CONVERTER — DÉMARRAGE        ║${RESET}"
@@ -60,7 +54,6 @@ fi
 API_PORT=""
 FRONTEND_PORT=""
 
-# 1. Lire depuis .env
 if [[ -f ".env" ]]; then
   # shellcheck disable=SC1091
   source ".env"
@@ -68,20 +61,15 @@ if [[ -f ".env" ]]; then
   FRONTEND_PORT="${FRONTEND_PORT:-}"
 fi
 
-# 2. Variables d'environnement (surcharge)
 API_PORT="${PORT:-$API_PORT}"
 FRONTEND_PORT="${FRONTEND_PORT:-$FRONTEND_PORT}"
 
-# 3. Détection automatique si toujours pas défini
 if [[ -z "$API_PORT" ]]; then
   API_PORT=$(find_available_port 3000 3100)
 fi
 if [[ -z "$FRONTEND_PORT" ]]; then
   FRONTEND_PORT=$(find_available_port "$((API_PORT + 1))" "$((API_PORT + 100))")
 fi
-
-log "Port API : $API_PORT"
-log "Port Frontend : $FRONTEND_PORT"
 
 export PORT="$API_PORT"
 export FRONTEND_PORT="$FRONTEND_PORT"
@@ -122,14 +110,40 @@ mkdir -p "${TMP_DIR:-./tmp}"
 
 # ─── Lancement des serveurs ─────────────────────────────────────────────────
 
+info "Démarrage des serveurs..."
+echo ""
+
+# Lancer les deux serveurs en arrière-plan
+PORT=$API_PORT FRONTEND_PORT=$FRONTEND_PORT pnpm --filter @workspace/api-server run dev &
+API_PID=$!
+
+FRONTEND_PORT=$FRONTEND_PORT PORT=$API_PORT pnpm --filter @workspace/media-converter run dev &
+FRONTEND_PID=$!
+
+# Attendre que l'API soit prête
+API_READY=false
+for i in $(seq 1 30); do
+  if curl -sf "http://localhost:$API_PORT/api/healthz" &>/dev/null; then
+    API_READY=true
+    break
+  fi
+  sleep 0.5
+done
+
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════╗${RESET}"
 echo -e "${BOLD}║      APPLICATION EN COURS D'EXÉCUTION    ║${RESET}"
 echo -e "${BOLD}╚══════════════════════════════════════════╝${RESET}"
 echo ""
-log "Frontend : ${BOLD}http://localhost:$FRONTEND_PORT${RESET}"
-log "API       : ${BOLD}http://localhost:$API_PORT${RESET}"
-log "Health   : ${BOLD}http://localhost:$API_PORT/api/healthz${RESET}"
+if $API_READY; then
+  log "Frontend : ${BOLD}http://localhost:$FRONTEND_PORT${RESET}"
+  log "API       : ${BOLD}http://localhost:$API_PORT${RESET}"
+  log "Health   : ${BOLD}http://localhost:$API_PORT/api/healthz${RESET}"
+else
+  warn "API pas encore prête — vérifiez les logs ci-dessus"
+  log "Frontend : ${BOLD}http://localhost:$FRONTEND_PORT${RESET}"
+  log "API       : ${BOLD}http://localhost:$API_PORT${RESET}"
+fi
 echo ""
 info "Appuyez sur Ctrl+C pour arrêter les serveurs"
 echo ""
@@ -146,13 +160,6 @@ cleanup() {
   exit 0
 }
 trap cleanup SIGINT SIGTERM
-
-# Lancer les deux serveurs en arrière-plan
-PORT=$API_PORT FRONTEND_PORT=$FRONTEND_PORT pnpm --filter @workspace/api-server run dev &
-API_PID=$!
-
-PORT=$FRONTEND_PORT pnpm --filter @workspace/media-converter run dev &
-FRONTEND_PID=$!
 
 # Attendre
 wait

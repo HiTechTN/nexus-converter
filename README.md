@@ -1,93 +1,68 @@
-# ⚡ NEXUS CONVERTER
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="artifacts/media-converter/public/images/bg-geometric.png">
+    <img src="artifacts/media-converter/public/images/bg-geometric.png" width="100%" alt="NEXUS CONVERTER" style="border-radius:12px;max-width:800px">
+  </picture>
+</p>
 
-**Application web full-stack de téléchargement et conversion de médias.**  
-Supporte **1000+ sites** (YouTube, Twitter/X, Instagram, TikTok, Twitch, Vimeo, Reddit, et bien d'autres) grâce à [yt-dlp](https://github.com/yt-dlp/yt-dlp).
+<h1 align="center">⚡ NEXUS CONVERTER</h1>
 
-![Design sombre gaming Red Magic](artifacts/media-converter/public/images/bg-geometric.png)
+<p align="center">
+  <strong>Application full-stack de téléchargement & conversion de médias</strong><br>
+  1000+ sites supportés — YouTube, TikTok, Instagram, Twitch, Twitter/X…
+</p>
+
+<p align="center">
+  <a href="https://github.com/HiTechTN/nexus-converter/actions/workflows/ci.yml"><img src="https://github.com/HiTechTN/nexus-converter/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/HiTechTN/nexus-converter/releases"><img src="https://img.shields.io/github/v/release/HiTechTN/nexus-converter?color=e94560&label=version" alt="Release"></a>
+  <a href="https://github.com/HiTechTN/nexus-converter/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?color=0f3460" alt="License"></a>
+  <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white" alt="Node"></a>
+  <a href="https://pnpm.io"><img src="https://img.shields.io/badge/pnpm-%3E%3D8-F69220?logo=pnpm&logoColor=white" alt="pnpm"></a>
+  <a href="https://hitechtn.github.io/nexus-converter"><img src="https://img.shields.io/badge/landing%20page-github%20pages-2ea44f" alt="Landing Page"></a>
+</p>
 
 ---
 
-## ✨ Fonctionnalités
-
-| Fonctionnalité | Détail |
-|---|---|
-| 🌐 **1000+ sites** | Toute URL valide (YouTube, TikTok, Instagram, Twitch…) |
-| 📁 **Drag & Drop** | Upload de fichiers locaux directement |
-| 🎬 **Formats** | MP4, MKV, MP3, WAV |
-| 📺 **Qualité** | 480p, 720p, 1080p, 4K, Best |
-| ⚡ **Progression temps réel** | Via Server-Sent Events (SSE) |
-| 🧹 **Nettoyage auto** | Fichiers temporaires supprimés après téléchargement |
-| 🎮 **Design gaming** | Interface sombre "Red Magic" avec animations |
-
----
-
-## 🚀 Installation rapide
-
-### Méthode 1 — Script automatique (recommandé)
+## 🚀 Quick Start
 
 ```bash
-git clone https://github.com/VOTRE_USER/nexus-converter.git
-cd nexus-converter
-./install.sh
-./start.sh
-```
+# Méthode 1 — Installation automatique (recommandé)
+curl -fsSL https://raw.githubusercontent.com/HiTechTN/nexus-converter/main/install.sh | bash
+cd ~/nexus-converter && ./start.sh
 
-L'application sera disponible sur **http://localhost:5173**
-
-### Méthode 2 — Docker Compose (le plus simple)
-
-```bash
-git clone https://github.com/VOTRE_USER/nexus-converter.git
-cd nexus-converter
-
-# Construire et lancer
-docker compose up --build
-
-# En arrière-plan
+# Méthode 2 — Docker
+git clone https://github.com/HiTechTN/nexus-converter.git && cd nexus-converter
 docker compose up --build -d
 ```
 
-L'application sera disponible sur **http://localhost**
-
-### Méthode 3 — Manuel
-
-```bash
-# 1. Prérequis système
-#    - Node.js 20+  →  https://nodejs.org
-#    - pnpm         →  npm install -g pnpm
-#    - FFmpeg       →  https://ffmpeg.org/download.html
-#    - yt-dlp       →  pip install yt-dlp
-
-# 2. Cloner et installer
-git clone https://github.com/VOTRE_USER/nexus-converter.git
-cd nexus-converter
-pnpm install
-
-# 3. Générer le client API
-pnpm --filter @workspace/api-spec run codegen
-
-# 4. Mode développement (deux terminaux)
-PORT=3000 pnpm --filter @workspace/api-server run dev      # Terminal 1
-PORT=5173 pnpm --filter @workspace/media-converter run dev # Terminal 2
-```
+> 👉 **http://localhost:5173** (dev) ou **http://localhost** (Docker)
 
 ---
 
-## ⚙️ Configuration
+## ✨ Features
 
-Copiez `.env.example` en `.env` et ajustez les valeurs :
+| | |
+|---|---|
+| 🌐 **1000+ sites** | YouTube, TikTok, Instagram, Twitter/X, Twitch, Vimeo… |
+| 📁 **Drag & Drop** | Upload de fichiers locaux |
+| 🎬 **Formats** | MP4, MKV, MP3, WAV |
+| 📺 **Qualité** | 480p, 720p, 1080p, 4K, Best |
+| ⚡ **Progression temps réel** | Server-Sent Events (SSE) |
+| 🧹 **Nettoyage auto** | Fichiers temporaires supprimés après téléchargement |
+| 🎮 **Design gaming** | Interface sombre "Red Magic" |
+| 🐧🪟🤖 **Multi-plateforme** | Linux, Windows, Android (releases) |
 
-```bash
-cp .env.example .env
-```
+---
 
-| Variable | Défaut | Description |
-|---|---|---|
-| `PORT` | `3000` | Port du serveur API |
-| `FRONTEND_PORT` | `5173` | Port du frontend (dev) |
-| `YTDLP_PATH` | auto | Chemin vers yt-dlp |
-| `TMP_DIR` | `./tmp` | Dossier temporaire |
-| `MAX_FILE_SIZE_MB` | `500` | Taille max upload |
+## 📦 Builds pré-packagés
+
+Téléchargez depuis [GitHub Releases](https://github.com/HiTechTN/nexus-converter/releases) :
+
+| Plateforme | Formats |
+|---|---|
+| 🐧 Linux | `.AppImage` • `.deb` • `.tar.gz` |
+| 🪟 Windows | `Setup.exe` (NSIS) • `portable.exe` |
+| 🤖 Android | `.apk` • `.aab` |
 
 ---
 
@@ -99,21 +74,23 @@ nexus-converter/
 │   ├── api-server/          # Backend Express 5
 │   │   └── src/routes/
 │   │       ├── media.ts     # Routes conversion (yt-dlp + FFmpeg)
-│   │       └── health.ts    # Healthcheck
-│   └── media-converter/     # Frontend React + Vite + Tailwind
-│       └── src/
-│           ├── pages/Home.tsx
-│           ├── hooks/use-sse.ts    # Progression temps réel
-│           └── components/GamingUI.tsx
+│   │       └── health.ts    # Healthcheck SSE
+│   ├── media-converter/     # Frontend React + Vite + Tailwind
+│   │   └── src/
+│   │       ├── pages/Home.tsx
+│   │       ├── hooks/use-sse.ts
+│   │       └── components/GamingUI.tsx
+│   ├── nexus-desktop/       # Electron shell
+│   └── nexus-mobile/        # Capacitor (Android/iOS)
 ├── lib/
-│   ├── api-spec/openapi.yaml       # Contrat API OpenAPI 3.1
-│   ├── api-client-react/           # Hooks React Query générés
-│   └── api-zod/                    # Schémas Zod générés
-├── install.sh       # Installateur automatique
-├── start.sh         # Lanceur (prod + dev)
-├── Dockerfile       # Image Docker multi-stage
+│   ├── api-spec/            # Contrat API OpenAPI 3.1
+│   ├── api-client-react/    # Hooks React Query générés
+│   └── api-zod/             # Schémas Zod
+├── install.sh               # Installateur automatique
+├── start.sh                 # Lanceur développement
+├── Dockerfile               # Multi-stage
 ├── docker-compose.yml
-└── nginx.conf       # Proxy reverse (Docker)
+└── nginx.conf               # Proxy reverse (Docker)
 ```
 
 ### API Endpoints
@@ -121,21 +98,42 @@ nexus-converter/
 | Méthode | Route | Description |
 |---|---|---|
 | `POST` | `/api/media/info` | Métadonnées d'une URL |
-| `POST` | `/api/media/convert` | Démarrer une conversion URL |
-| `GET` | `/api/media/progress/:jobId` | Flux SSE de progression |
-| `GET` | `/api/media/download/:jobId` | Télécharger le fichier converti |
-| `POST` | `/api/media/upload` | Uploader un fichier local |
+| `POST` | `/api/media/convert` | Démarrer conversion URL |
+| `GET` | `/api/media/progress/:jobId` | Flux SSE progression |
+| `GET` | `/api/media/download/:jobId` | Télécharger fichier converti |
+| `POST` | `/api/media/upload` | Upload fichier local |
 | `GET` | `/api/healthz` | Health check |
 
 ---
 
-## 🛠️ Stack technique
+## ⚙️ Configuration
 
-- **Frontend** : React 18, Vite, Tailwind CSS 4, Framer Motion, React Query
-- **Backend** : Node.js 20, Express 5, TypeScript
-- **Médias** : [yt-dlp](https://github.com/yt-dlp/yt-dlp) + [FFmpeg](https://ffmpeg.org)
-- **API** : OpenAPI 3.1, Orval (codegen), Zod
-- **Monorepo** : pnpm workspaces
+```bash
+cp .env.example .env
+```
+
+| Variable | Défaut | Description |
+|---|---|---|
+| `PORT` | `3000` | Port API |
+| `FRONTEND_PORT` | `5173` | Port frontend (dev) |
+| `YTDLP_PATH` | auto | Chemin yt-dlp |
+| `TMP_DIR` | `./tmp` | Dossier temporaire |
+| `MAX_FILE_SIZE_MB` | `500` | Taille max upload |
+
+---
+
+## 🛠️ Stack
+
+| Couche | Technologie |
+|---|---|
+| **Frontend** | React 18, Vite 5, Tailwind CSS 4, Framer Motion, React Query |
+| **Backend** | Node.js 22, Express 5, TypeScript |
+| **Médias** | yt-dlp + FFmpeg |
+| **API** | OpenAPI 3.1, Orval (codegen), Zod |
+| **Desktop** | Electron + electron-builder |
+| **Mobile** | Capacitor + Android SDK |
+| **Monorepo** | pnpm workspaces |
+| **CI/CD** | GitHub Actions |
 
 ---
 
@@ -143,14 +141,14 @@ nexus-converter/
 
 | Outil | Version | Installation |
 |---|---|---|
-| Node.js | ≥ 18 | https://nodejs.org |
+| Node.js | ≥ 18 | [nodejs.org](https://nodejs.org) |
 | pnpm | ≥ 8 | `npm install -g pnpm` |
-| FFmpeg | Toute | https://ffmpeg.org |
+| FFmpeg | Toute | [ffmpeg.org](https://ffmpeg.org) |
 | yt-dlp | Toute | `pip install yt-dlp` |
-| Python 3 | ≥ 3.8 | https://python.org |
+| Python 3 | ≥ 3.8 | [python.org](https://python.org) |
 
 ---
 
 ## 📄 Licence
 
-MIT
+MIT — © 2025 [HiTechTN](https://github.com/HiTechTN)
