@@ -35,7 +35,7 @@ export function useSSE(jobId: string | null) {
     setProgress({ percent: 0, status: "processing" });
 
     const unsubscribe = subscribeToProgress(jobId, {
-      onProgress: (percent, speed, eta) => {
+      onProgress: (percent: number, speed?: string, eta?: number) => {
         setProgress((prev) => ({
           ...prev,
           percent,
@@ -44,7 +44,7 @@ export function useSSE(jobId: string | null) {
           status: "processing",
         }));
       },
-      onComplete: (fileName, fileSize) => {
+      onComplete: (fileName: string, fileSize?: number) => {
         setProgress((prev) => ({
           ...prev,
           percent: 100,
@@ -53,14 +53,14 @@ export function useSSE(jobId: string | null) {
           status: "completed",
         }));
       },
-      onError: (message) => {
+      onError: (message: string) => {
         setProgress((prev) => ({
           ...prev,
           status: "failed",
           message,
         }));
       },
-      onInfo: (message) => {
+      onInfo: (message: string) => {
         setProgress((prev) => ({
           ...prev,
           message,
