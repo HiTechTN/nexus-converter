@@ -5,6 +5,7 @@
 #   - 🌐 Web (GitHub Pages)
 #   - 🖥️ Desktop Linux (.AppImage, .deb, .rpm, .tar.gz)
 #   - 🖥️ Desktop Windows (.exe, .portable, .msi)
+#   - 🖥️ Desktop macOS (.dmg, .zip)
 #   - 📱 Android (.apk, .aab)
 #   - 📱 iOS (.ipa)
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -253,7 +254,69 @@ jobs:
           retention-days: 3
 
   # ──────────────────────────────────────────────────────────────────────────
-  # 4. BUILD ANDROID (.apk, .aab)
+  # 4. BUILD DESKTOP macOS (.dmg, .zip)
+  # ──────────────────────────────────────────────────────────────────────────
+  desktop-macos:
+    name: "🖥️ Desktop macOS"
+    needs: [build-web]
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Download web build
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: artifacts/media-converter/dist/
+
+      - name: Download api-server build
+        uses: actions/download-artifact@v4
+        with:
+          name: api-server-build
+          path: artifacts/api-server/dist/
+
+      - name: Generate desktop icons
+        run: bash artifacts/nexus-desktop/scripts/generate-icons.sh
+
+      - name: Build Electron app
+        run: |
+          cd artifacts/nexus-desktop
+          pnpm run build:electron
+        env:
+          NODE_ENV: production
+
+      - name: Package for macOS
+        run: |
+          cd artifacts/nexus-desktop
+          npx electron-builder --mac --publish=never
+        env:
+          NODE_ENV: production
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-macos
+          path: |
+            artifacts/nexus-desktop/release/*.dmg
+            artifacts/nexus-desktop/release/*.zip
+            artifacts/nexus-desktop/release/*.blockmap
+          retention-days: 3
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 5. BUILD ANDROID (.apk, .aab)
   # ──────────────────────────────────────────────────────────────────────────
   mobile-android:
     name: "📱 Android APK/AAB"
@@ -404,7 +467,7 @@ jobs:
   create-release:
     name: "🏷️ Create GitHub Release"
     if: ${{ always() && needs.build-web.result == 'success' }}
-    needs: [build-web, desktop-linux, desktop-windows, mobile-android, mobile-ios]
+    needs: [build-web, desktop-linux, desktop-windows, desktop-macos, mobile-android, mobile-ios]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -441,6 +504,11 @@ jobs:
           # Desktop Windows
           if [ -d "release-artifacts/desktop-windows" ]; then
             cp release-artifacts/desktop-windows/* release-assets/ 2>/dev/null || true
+          fi
+
+          # Desktop macOS
+          if [ -d "release-artifacts/desktop-macos" ]; then
+            cp release-artifacts/desktop-macos/* release-assets/ 2>/dev/null || true
           fi
 
           # Mobile Android
