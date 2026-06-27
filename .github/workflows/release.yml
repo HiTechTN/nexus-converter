@@ -5,6 +5,7 @@
 #   - 🌐 Web (GitHub Pages)
 #   - 🖥️ Desktop Linux (.AppImage, .deb, .rpm, .tar.gz)
 #   - 🖥️ Desktop Windows (.exe, .portable, .msi)
+#   - 🖥️ Desktop macOS (.dmg, .zip)
 #   - 📱 Android (.apk, .aab)
 #   - 📱 iOS (.ipa)
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -71,6 +72,15 @@ jobs:
       - name: Build web frontend
         run: pnpm --filter @workspace/media-converter run build
 
+      - name: Extract version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload web build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -85,9 +95,29 @@ jobs:
           path: artifacts/api-server/dist/
           retention-days: 3
 
-      - name: Extract version
-        id: version
-        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+      - name: Package web dist as zip
+        run: |
+          cd artifacts/media-converter
+          zip -r nexus-web-${{ steps.version.outputs.version }}.zip dist/
+
+      - name: Package api-server dist as zip
+        run: |
+          cd artifacts/api-server
+          zip -r nexus-api-server-${{ steps.version.outputs.version }}.zip dist/
+
+      - name: Upload web zip for release
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist-zip
+          path: artifacts/media-converter/nexus-web-*.zip
+          retention-days: 3
+
+      - name: Upload api-server zip for release
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-server-dist-zip
+          path: artifacts/api-server/nexus-api-server-*.zip
+          retention-days: 3
 
   # ──────────────────────────────────────────────────────────────────────────
   # 2. BUILD DESKTOP LINUX (.AppImage, .deb, .rpm, .tar.gz)
@@ -224,7 +254,69 @@ jobs:
           retention-days: 3
 
   # ──────────────────────────────────────────────────────────────────────────
-  # 4. BUILD ANDROID (.apk, .aab)
+  # 4. BUILD DESKTOP macOS (.dmg, .zip)
+  # ──────────────────────────────────────────────────────────────────────────
+  desktop-macos:
+    name: "🖥️ Desktop macOS"
+    needs: [build-web]
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Download web build
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: artifacts/media-converter/dist/
+
+      - name: Download api-server build
+        uses: actions/download-artifact@v4
+        with:
+          name: api-server-build
+          path: artifacts/api-server/dist/
+
+      - name: Generate desktop icons
+        run: bash artifacts/nexus-desktop/scripts/generate-icons.sh
+
+      - name: Build Electron app
+        run: |
+          cd artifacts/nexus-desktop
+          pnpm run build:electron
+        env:
+          NODE_ENV: production
+
+      - name: Package for macOS
+        run: |
+          cd artifacts/nexus-desktop
+          npx electron-builder --mac --publish=never
+        env:
+          NODE_ENV: production
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-macos
+          path: |
+            artifacts/nexus-desktop/release/*.dmg
+            artifacts/nexus-desktop/release/*.zip
+            artifacts/nexus-desktop/release/*.blockmap
+          retention-days: 3
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 5. BUILD ANDROID (.apk, .aab)
   # ──────────────────────────────────────────────────────────────────────────
   mobile-android:
     name: "📱 Android APK/AAB"
@@ -293,12 +385,6 @@ jobs:
 
   # ──────────────────────────────────────────────────────────────────────────
   # 5. BUILD iOS (.ipa) — macOS runner uniquement
-  # ──────────────────────────────────────────────────────────────────────────
-  # NOTE: iOS build requires Apple Developer secrets in GitHub:
-  #   - APPLE_DEVELOPER_TEAM (Team ID, e.g. ABC123DEFG)
-  #   - APPLE_CERTIFICATES (base64-encoded .p12 + provisioning profiles)
-  #   See: https://github.com/Apple-Actions/ios-build#usage
-  # Without these secrets, the archive step succeeds but IPA export is skipped.
   # ──────────────────────────────────────────────────────────────────────────
   mobile-ios:
     name: "📱 iOS IPA"
@@ -380,8 +466,8 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   create-release:
     name: "🏷️ Create GitHub Release"
-    if: always()
-    needs: [build-web, desktop-linux, desktop-windows, mobile-android, mobile-ios]
+    if: ${{ always() && needs.build-web.result == 'success' }}
+    needs: [build-web, desktop-linux, desktop-windows, desktop-macos, mobile-android, mobile-ios]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -400,6 +486,16 @@ jobs:
           mkdir -p release-assets
           VERSION="${{ needs.build-web.outputs.version }}"
 
+          # Web dist
+          if [ -d "release-artifacts/web-dist-zip" ]; then
+            cp release-artifacts/web-dist-zip/*.zip release-assets/ 2>/dev/null || true
+          fi
+
+          # API server dist
+          if [ -d "release-artifacts/api-server-dist-zip" ]; then
+            cp release-artifacts/api-server-dist-zip/*.zip release-assets/ 2>/dev/null || true
+          fi
+
           # Desktop Linux
           if [ -d "release-artifacts/desktop-linux" ]; then
             cp release-artifacts/desktop-linux/* release-assets/ 2>/dev/null || true
@@ -408,6 +504,11 @@ jobs:
           # Desktop Windows
           if [ -d "release-artifacts/desktop-windows" ]; then
             cp release-artifacts/desktop-windows/* release-assets/ 2>/dev/null || true
+          fi
+
+          # Desktop macOS
+          if [ -d "release-artifacts/desktop-macos" ]; then
+            cp release-artifacts/desktop-macos/* release-assets/ 2>/dev/null || true
           fi
 
           # Mobile Android

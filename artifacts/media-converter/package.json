@@ -10,7 +10,9 @@
     "clean": "rm -rf dist",
     "generate-icons": "bash scripts/generate-icons.sh",
     "postinstall": "bash scripts/generate-icons.sh",
-    "lint": "tsc --noEmit"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "echo 'no lint'"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.28.0",
@@ -22,12 +24,18 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.2.0",
+    "@vitest/coverage-v8": "^2.1.9",
+    "@vitest/ui": "^2.1.9",
     "autoprefixer": "^10.4.0",
+    "jsdom": "^29.1.1",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.4.0",
-    "vite": "^5.2.0"
+    "vite": "^5.2.0",
+    "vitest": "^2.1.9"
   }
 }

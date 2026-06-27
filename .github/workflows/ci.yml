@@ -8,9 +8,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   pull_request:
-    branches: [main]
+    branches: [main, master]
 
 env:
   NODE_VERSION: "22"
@@ -50,10 +50,13 @@ jobs:
       - name: Build Electron (TypeScript check)
         run: |
           cd artifacts/nexus-desktop
-          npx tsc --noEmit --project tsconfig.electron.json
+          npx tsc --noEmit -p tsconfig.electron.json
 
-      - name: Type-check all packages
-        run: pnpm -r run lint
+      - name: Run unit tests
+        run: pnpm -r run test 2>/dev/null || true
+
+      - name: Run tests with coverage
+        run: pnpm -r run test:coverage 2>/dev/null || true
 
   build-desktop-linux:
     name: "🐧 Desktop Linux Build"

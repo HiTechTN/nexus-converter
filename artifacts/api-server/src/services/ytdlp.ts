@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from "child_process";
-import { existsSync } from "fs";
+import { existsSync, readdirSync } from "fs";
 import { mkdtemp } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
@@ -133,7 +133,7 @@ export async function convertMedia(
 
   const args = [
     "--no-playlist",
-    "--print", "filename",
+    "--print", "after_move:filepath",
     "-o", outputTemplate,
     "-f", formatOpt,
     ...(options.format === "mp3" || options.format === "wav"
@@ -184,8 +184,21 @@ export async function convertMedia(
         return reject(new Error("Could not determine output file path"));
       }
 
-      const fileName = outputFile.split("/").pop() || "output." + options.format;
-      resolve({ filePath: outputFile, fileName });
+      // Verify the output file exists; if not, find it in the temp directory
+      let finalPath = outputFile;
+      if (!existsSync(finalPath)) {
+        const files = readdirSync(tmpDir);
+        const targetExt = "." + options.format;
+        const match = files.find((f) => f.endsWith(targetExt));
+        if (match) {
+          finalPath = join(tmpDir, match);
+        } else if (files.length > 0) {
+          finalPath = join(tmpDir, files[0]);
+        }
+      }
+
+      const fileName = finalPath.split("/").pop() || "output." + options.format;
+      resolve({ filePath: finalPath, fileName });
     });
 
     proc.on("error", (err) => {

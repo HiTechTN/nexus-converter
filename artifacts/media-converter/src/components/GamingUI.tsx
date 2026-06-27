@@ -1,102 +1,6 @@
-import { useState, useEffect, createContext, useContext, useCallback, type ReactNode } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHealthCheck } from "@workspace/api-client-react";
-
-/* ─── Toast Context ───────────────────────────────────────────────────────── */
-
-interface Toast {
-  id: number;
-  message: string;
-  type: "success" | "error" | "info";
-}
-
-interface ToastContextValue {
-  toast: (message: string, type?: Toast["type"]) => void;
-}
-
-const ToastContext = createContext<ToastContextValue>({ toast: () => {} });
-
-export function useToast() {
-  return useContext(ToastContext);
-}
-
-let toastId = 0;
-
-function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-
-  const toast = useCallback((message: string, type: Toast["type"] = "info") => {
-    const id = ++toastId;
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
-  }, []);
-
-  return (
-    <ToastContext.Provider value={{ toast }}>
-      {children}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
-        <AnimatePresence>
-          {toasts.map((t) => (
-            <motion.div
-              key={t.id}
-              initial={{ opacity: 0, x: 80, scale: 0.9 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 80, scale: 0.9 }}
-              className={`pointer-events-auto px-4 py-3 rounded-lg shadow-xl font-body text-sm backdrop-blur-md border max-w-xs ${
-                t.type === "success"
-                  ? "bg-[#00ff88]/10 border-[#00ff88]/30 text-[#00ff88]"
-                  : t.type === "error"
-                  ? "bg-[#e94560]/10 border-[#e94560]/30 text-[#e94560]"
-                  : "bg-[#0f3460]/20 border-[#0f3460]/50 text-white"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <span>{t.type === "success" ? "✓" : t.type === "error" ? "✗" : "i"}</span>
-                <span>{t.message}</span>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-    </ToastContext.Provider>
-  );
-}
-
-/* ─── Loading Skeleton ────────────────────────────────────────────────────── */
-
-function Skeleton({ className = "" }: { className?: string }) {
-  return (
-    <div
-      className={`animate-pulse bg-[#2a2a4a]/50 rounded ${className}`}
-      style={{ animationDuration: "1.5s" }}
-    />
-  );
-}
-
-function ConverterSkeleton() {
-  return (
-    <div className="glass-card rounded-xl p-6 md:p-8 max-w-2xl mx-auto space-y-5">
-      <Skeleton className="h-8 w-24" />
-      <div className="flex gap-2">
-        <Skeleton className="h-12 flex-1" />
-        <Skeleton className="h-12 w-24" />
-      </div>
-      <div className="flex gap-2">
-        {["mp4", "mkv", "mp3", "wav"].map((f) => (
-          <Skeleton key={f} className="h-10 w-16" />
-        ))}
-      </div>
-      <div className="flex gap-2">
-        {["480p", "720p", "1080p", "4k", "best"].map((q) => (
-          <Skeleton key={q} className="h-8 w-16" />
-        ))}
-      </div>
-      <Skeleton className="h-14 w-48 mx-auto rounded-lg" />
-    </div>
-  );
-}
 
 /* ─── Header Component ─────────────────────────────────────────────────────── */
 
@@ -146,12 +50,6 @@ function Header({
           {/* Mini status dot for mobile */}
           <div className="sm:hidden">
             <StatusDot status={health?.status || "ok"} />
-          </div>
-
-          {/* Keyboard hint */}
-          <div className="hidden md:flex items-center gap-1 text-[10px] text-[#555577] font-body border border-[#2a2a4a] rounded px-2 py-1">
-            <kbd className="px-1 bg-[#1a1a2e] rounded text-[#8888aa]">N</kbd>
-            <span>Nouveau</span>
           </div>
 
           {/* Reset button */}
@@ -486,10 +384,6 @@ const GamingUI = {
   ProgressDisplay,
   ParticleBackground,
   HexIcon,
-  ToastProvider,
-  useToast,
-  Skeleton,
-  ConverterSkeleton,
 };
 
 export default GamingUI;
