@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import ErrorBoundary from "../ErrorBoundary";
 
 // Component that throws on render
-function ThrowingComponent({ message }: { message: string }) {
+function ThrowingComponent({ message }: { message: string }): JSX.Element {
   throw new Error(message);
 }
 
@@ -58,7 +58,7 @@ describe("ErrorBoundary", () => {
     // Click reset — but since the child still throws, it will re-catch
     // Instead, test with a toggle component
     let shouldThrow = true;
-    function ToggleThrow() {
+    function ToggleThrow(): JSX.Element {
       if (shouldThrow) throw new Error("Dynamic error");
       return <div>Recovered</div>;
     }
