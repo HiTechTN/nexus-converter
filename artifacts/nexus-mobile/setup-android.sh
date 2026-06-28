@@ -89,12 +89,12 @@ echo "[6/9] Patching build.gradle..."
 BUILD_GRADLE="$ANDROID_DIR/app/build.gradle"
 
 if ! grep -q "externalNativeBuild" "$BUILD_GRADLE" 2>/dev/null; then
-  sed -i 's/android {/android {\n    externalNativeBuild {\n        cmake {\n            path "CMakeLists.txt"\n            arguments "-DANDROID_STL=c++_shared"\n        }\n    }/' "$BUILD_GRADLE"
+  sed -i 's/android {/android {\n    externalNativeBuild {\n        cmake {\n            path "CMakeLists.txt"\n        }\n    }/' "$BUILD_GRADLE"
 
   sed -i 's/defaultConfig {/defaultConfig {\n        ndk {\n            abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"\n        }/' "$BUILD_GRADLE"
 
   # Ensure minSdkVersion >= 24 for nodejs-mobile
-  sed -i 's/minSdkVersion [0-9]*/minSdkVersion 24/' "$BUILD_GRADLE"
+  sed -i 's/minSdkVersion [0-9]\+/minSdkVersion 24/' "$BUILD_GRADLE"
 fi
 
 if ! grep -q "jniLibs.srcDirs" "$BUILD_GRADLE" 2>/dev/null; then
@@ -135,21 +135,27 @@ if [ ! -d "$ASSETS_DIR/python" ]; then
   PYTHON_TMP="/tmp/python-android-${PYTHON_VERSION}"
   PYTHON_ZIP="/tmp/python-android-${PYTHON_VERSION}.zip"
 
-  curl -fsSL -o "$PYTHON_ZIP" "$PYTHON_URL"
-  mkdir -p "$PYTHON_TMP"
-  unzip -o "$PYTHON_ZIP" -d "$PYTHON_TMP" > /dev/null
+  curl -fsSL -o "$PYTHON_ZIP" "$PYTHON_URL" || true
 
-  # Handle potential single top-level directory in the ZIP
-  PYTHON_SRC="$PYTHON_TMP"
-  CONTENTS=("$PYTHON_TMP"/*)
-  if [ ${#CONTENTS[@]} -eq 1 ] && [ -d "${CONTENTS[0]}" ]; then
-    PYTHON_SRC="${CONTENTS[0]}"
+  if [ -f "$PYTHON_ZIP" ] && [ -s "$PYTHON_ZIP" ]; then
+    mkdir -p "$PYTHON_TMP"
+    unzip -o "$PYTHON_ZIP" -d "$PYTHON_TMP" > /dev/null
+
+    # Handle potential single top-level directory in the ZIP
+    PYTHON_SRC="$PYTHON_TMP"
+    CONTENTS=("$PYTHON_TMP"/*)
+    if [ ${#CONTENTS[@]} -eq 1 ] && [ -d "${CONTENTS[0]}" ]; then
+      PYTHON_SRC="${CONTENTS[0]}"
+    fi
+
+    mkdir -p "$ASSETS_DIR/python"
+    cp -r "$PYTHON_SRC"/* "$ASSETS_DIR/python/"
+    rm -rf "$PYTHON_TMP"
+    echo "  → Python ${PYTHON_VERSION} downloaded ($(du -sh "$ASSETS_DIR/python" | cut -f1))"
+  else
+    echo "  → Python ${PYTHON_VERSION} not available (non-fatal)"
   fi
-
-  mkdir -p "$ASSETS_DIR/python"
-  cp -r "$PYTHON_SRC"/* "$ASSETS_DIR/python/"
-  rm -rf "$PYTHON_TMP" "$PYTHON_ZIP"
-  echo "  → Python ${PYTHON_VERSION} downloaded ($(du -sh "$ASSETS_DIR/python" | cut -f1))"
+  rm -f "$PYTHON_ZIP"
 else
   echo "  → Python already present, skipping"
 fi
@@ -157,8 +163,13 @@ fi
 echo "[9/9] Downloading yt-dlp..."
 if [ ! -f "$ASSETS_DIR/bin/yt-dlp.zip" ]; then
   YTDLP_URL="https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.zip"
-  curl -fsSL -o "$ASSETS_DIR/bin/yt-dlp.zip" "$YTDLP_URL"
-  echo "  → yt-dlp.zip downloaded ($(du -h "$ASSETS_DIR/bin/yt-dlp.zip" | cut -f1))"
+  curl -fsSL -o "$ASSETS_DIR/bin/yt-dlp.zip" "$YTDLP_URL" || true
+  if [ -f "$ASSETS_DIR/bin/yt-dlp.zip" ] && [ -s "$ASSETS_DIR/bin/yt-dlp.zip" ]; then
+    echo "  → yt-dlp.zip downloaded ($(du -h "$ASSETS_DIR/bin/yt-dlp.zip" | cut -f1))"
+  else
+    echo "  → yt-dlp not available (non-fatal)"
+    rm -f "$ASSETS_DIR/bin/yt-dlp.zip"
+  fi
 else
   echo "  → yt-dlp already present, skipping"
 fi
