@@ -452,6 +452,9 @@ jobs:
           name: web-build
           path: artifacts/media-converter/dist/
 
+      - name: Install CocoaPods
+        run: sudo gem install cocoapods
+
       - name: Add & Sync Capacitor iOS
         run: |
           cd artifacts/nexus-mobile

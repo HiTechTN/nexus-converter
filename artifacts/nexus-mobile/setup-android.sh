@@ -57,7 +57,7 @@ fi
 
 echo "[2/6] Extracting libnode.so to jniLibs..."
 mkdir -p "$JNI_LIBS_DIR"
-unzip -o "$NODEJS_ZIP" "bin/*" -d /tmp/nodejs-mobile-extract/ > /dev/null
+unzip -o "$NODEJS_ZIP" "bin/*" "include/*" -d /tmp/nodejs-mobile-extract/ > /dev/null
 
 for arch in arm64-v8a armeabi-v7a x86_64; do
   mkdir -p "$JNI_LIBS_DIR/$arch"
