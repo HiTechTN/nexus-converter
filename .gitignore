@@ -24,8 +24,8 @@ Thumbs.db
 # Build artifacts
 *.tsbuildinfo
 
-# Android mobile: bundled API server
-artifacts/nexus-mobile/nodejs-project/
+# Android mobile
+artifacts/nexus-mobile/android/
 
 # Generated icons (media-converter)
 artifacts/media-converter/public/apple-touch-icon.png
